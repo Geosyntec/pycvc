@@ -8,7 +8,7 @@ Anaconda is a free and open-source distribution of Python built and maintained b
 Windows, Mac OS X, and Linux users can download the Anaconda installers [here](http://continuum.io/downloads).
 
 `conda` is a package manager bundled with Anaconda.
-Package managers make it easy to install third party python libraries as well as other hard-to-install tools such as GDAL for spatial analysis and R for statistics.
+Package managers make it easy to install third party python libraries as well as other hard-to-install tools such as GDAL for spatial analysis and R for statistics. For a more detailed description of conda, check out the [official documentation](http://conda.pydata.org/docs/)
 
 Linux and Mac OS X users should follow the installation instructions
 It is recommended to install and use the 64-bit version of Anaconda if your system allows.
@@ -118,3 +118,31 @@ Linking packages ...
 [      COMPLETE      ]|##################################################| 100%
 ```
 At that point, `pycvc` and all of its dependencies are installed.
+
+
+## Using `pycvc`
+With `pycvc` and all of its dependencies installed, they best way to get started is by downloading and using the (notebook)[https://github.com/Geosyntec/pycvc/blob/master/examples/Data%20Summaries.ipynb] in this repository.
+Once you've downloaded the notebook to a convenient place, navigate to that directory in a command prompt, activate the `cvc` conda environment, and start a Jupyer/IPython notebook server. That will look *something* like this:
+```
+Microsoft Windows [Version 6.3.9600]
+(c) 2013 Microsoft Corporation. All rights reserved.
+
+C:\Users\phobson
+$ cd Downloads
+
+C:\Users\phobson\Downloads
+$ activate cvc
+Activating environment "cvc"...
+
+[cvc] C:\Users\phobson\Downloads
+$ ipython notebook
+[I 09:04:51.902 NotebookApp] Serving notebooks from local directory: C:\Users\phobson\Downloads
+[I 09:04:51.902 NotebookApp] 0 active kernels
+[I 09:04:51.902 NotebookApp] The IPython Notebook is running at: http://localhost:8888/
+[I 09:04:51.902 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
+```
+At that point, your default web browser (preferably not Internet Explorer) will pop up. 
+If that browswer happens to be internet explorer, it is recommended to copy the notebook server's URL into a modern browswer like Chrome or Firefox.
+Then, click the notebook in the list of files and a new browser tab will open with the analysis ready to go.
+
+For more information about Jupyter, check out the [official documentation](http://jupyter.readthedocs.org/en/latest/)

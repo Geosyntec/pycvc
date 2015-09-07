@@ -17,7 +17,7 @@ def getDataFiles(datadir):
 DESCRIPTION = "pycvc: Analyze CVC stormwater data"
 LONG_DESCRIPTION = DESCRIPTION
 NAME = "pycvc"
-VERSION = "0.1"
+VERSION = "0.1.1"
 AUTHOR = "Paul Hobson (Geosyntec Consultants)"
 AUTHOR_EMAIL = "phobson@geosyntec.com"
 URL = ""
@@ -37,7 +37,7 @@ CLASSIFIERS = [
     'Programming Language :: Python :: 3.3',
     'Programming Language :: Python :: 3.4',
 ]
-INSTALL_REQUIRES = ['pybmp', 'pynsqd']
+INSTALL_REQUIRES = ['wqio', 'pybmpdb', 'pynsqd']
 PACKAGE_DATA = {}
 DATA_FILES = []
 
@@ -58,4 +58,5 @@ if __name__ == "__main__":
         platforms=PLATFORMS,
         classifiers=CLASSIFIERS,
         install_requires=INSTALL_REQUIRES,
+        zip_safe=False
     )

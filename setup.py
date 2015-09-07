@@ -17,7 +17,7 @@ def getDataFiles(datadir):
 DESCRIPTION = "pycvc: Analyze CVC stormwater data"
 LONG_DESCRIPTION = DESCRIPTION
 NAME = "pycvc"
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 AUTHOR = "Paul Hobson (Geosyntec Consultants)"
 AUTHOR_EMAIL = "phobson@geosyntec.com"
 URL = ""

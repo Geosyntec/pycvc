@@ -6,7 +6,7 @@ import pandas
 
 import wqio
 from wqio import utils
-import pybmp
+import pybmpdb
 import pynsqd
 
 from .info import POC_dicts
@@ -141,7 +141,7 @@ class bmpdb(_external_source):
             lambda x: x['conc_units']['plain'] == 'CFU/100 mL', POC_dicts
         ))
 
-        self.table, self.db = pybmp.getSummaryData(
+        self.table, self.db = pybmpdb.getSummaryData(
             catanalysis=False, astable=True,
             parameter=self.paramnames,
             category=bmpcats_to_use,

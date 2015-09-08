@@ -1,0 +1,162 @@
+\documentclass[final,x11names,mathserif]{beamer}
+\usepackage[scaled]{helvet}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{siunitx}
+\sisetup{detect-all}
+
+__watermark__
+
+\usepackage{sansmath}
+\sansmath
+
+\usepackage{array}
+\newcolumntype{x}[1]{>{\centering\hspace{0pt}}p{#1}}
+
+\usepackage{tikz}
+
+% \usecolortheme{seagull}
+% headline colors and fonts
+\definecolor{myblue}{RGB}{0,88,176}
+\definecolor[named]{CVCTeal}{rgb}{0.00,0.42,0.44}
+\definecolor[named]{CVCGreen}{rgb}{0.36,0.53,0.15}
+\definecolor[named]{CVCGrey}{rgb}{0.20,0.20,0.20}
+\definecolor[named]{CVCGray}{rgb}{0.20,0.20,0.20}
+\definecolor[named]{CVCLightGrey}{rgb}{0.90,0.90,0.90}
+\definecolor[named]{CVCLightGray}{rgb}{0.90,0.90,0.90}
+\definecolor[named]{CVCWhite}{rgb}{1.00,1.00,1.00}
+
+\setbeamercolor{headline}{fg=CVCGrey,bg=white}
+\setbeamercolor{title in headline}{fg=CVCGrey}
+\setbeamercolor{author in headline}{fg=CVCGrey}
+\setbeamercolor{institute in headline}{fg=CVCGrey}
+\setbeamercolor{logo in headline}{fg=black,bg=lightgray}
+\setbeamercolor{separation line}{bg=black}
+
+% footline colors and fonts
+\setbeamercolor{footline}{fg=black,bg=white}
+\setbeamerfont{footline}{size=\small}
+\setbeamercolor{bar in footline}{fg=black,bg=lightgray}
+
+% body colors and fonts
+\setbeamercolor*{normal text}{fg=black,bg=white,family=\sffamily}
+
+% block environment
+\setbeamercolor*{block body}{bg=white,fg=black}
+\setbeamerfont{block body}{family=\sffamily}
+\setbeamercolor*{block title}{bg=white,fg=CVCTeal}
+\setbeamerfont{block title}{size=\large,series=\bf}
+
+%% example environment
+%\setbeamercolor*{example title}{fg=white,bg=blue}
+%\usefonttheme{serif}
+%\setbeamerfont{example title}{size=\large,series=\bf,bg=DodgerBlue4,fg=white}
+
+\setbeamercolor{alerted text}{fg=orange}
+
+%\setbeamertemplate{itemize items}[triangle]
+\setbeamertemplate{navigation symbols}{}  % no navigation on a poster
+
+% Block Style
+\setbeamertemplate{block begin}{
+    \vskip0.5ex
+    \begin{beamercolorbox}[leftskip=.3cm,rounded=true,shadow=false]{block title}%
+        \usebeamerfont*{block title}\textsf\insertblocktitle
+    \end{beamercolorbox}%
+    {\ifbeamercolorempty[bg]{block body}{}{\nointerlineskip\vskip1pt}}%
+    \usebeamerfont{block body}%
+        \begin{beamercolorbox}[rounded=true,vmode]{block body}%
+        %\begin{beamercolorbox}[]{block body}
+    \ifbeamercolorempty[bg]{block body}{}{}\vbox{}%
+    }
+    \setbeamertemplate{block end}{
+    \end{beamercolorbox}
+}
+
+% Header
+\setbeamertemplate{headline}{
+    \leavevmode
+    \begin{beamercolorbox}[sep=0.2cm,wd=\paperwidth]{headline}
+        \begin{columns}
+            \begin{column}{0.75\paperwidth}
+                \usebeamercolor{title in headline}{%
+                \hspace{1cm}\raggedright\color{fg}\textbf{\textsf{\large{\inserttitle}}}\\[.5ex]}
+                \usebeamercolor{author in headline}{%
+                \hspace{1cm}\raggedright\color{fg}\textsf{\large{\insertauthor}}\\[.5ex]}
+                \usebeamercolor{institute in headline}{%
+                \hspace{1cm}\raggedright\color{fg}\textsf{\large{\insertinstitute}}}
+            \end{column}
+            \begin{column}{0.2\paperwidth}
+                \centering
+                \includegraphics[scale=.5]{logo}
+            \end{column}
+        \end{columns}
+    \end{beamercolorbox}%
+}
+
+%\usepackage{times}
+%\usepackage{amsmath,amsthm, amssymb, latexsym}
+%\boldmath
+\listfiles
+
+% Page Orientation
+\usepackage[size=custom,width=21.59,height=27.94,scale=0.6]{beamerposter}
+%\usepackage[orientation=portrait,size=a4,scale=.6]{beamerposter}
+
+\graphicspath{{../images/}{../../img/Storm/}}
+\title{Individual Storm Report __draft__}
+\author{__DATE__}
+\institute{__site_name__, Mississauga, ON}
+\date{\today}
+
+
+\begin{document}
+    \begin{frame}{}
+        \begin{columns}[T]
+            \begin{column}{.6\textwidth}
+                % \begin{block}{General Information} % Block 1
+                %     \centering
+                %     \small
+                %     \input{__GeneralTable__}
+                % \end{block}
+
+                \begin{block}{Hydrology} % Block 2
+                    \centering
+                    \small
+                    \input{__HydroTable__}
+                \end{block}
+            \end{column}
+
+            \begin{column}{.4\textwidth} % bmp photo
+                \centering
+                \vskip1cm
+                \tikz\node [fill=white,draw] {\includegraphics[width=0.85\columnwidth]{__BMPPHOTO__}};
+                \vfill
+            \end{column}
+        \end{columns}
+
+        \begin{block}{Storm Precipitation and Hydrology} % Block 3
+            \begin{columns}[T]
+                \begin{column}{.70\textwidth} % hydrograph
+                    \includegraphics[width=\columnwidth]{__HydroFigure__}
+                \end{column}
+                \begin{column}{.25\textwidth}\footnotesize\vspace{-5mm} % notes about hydrograph
+                    Notes: Measured effluent hydrograph is shown in blue
+                    and the precipitation hyetograph is shown in green.
+                    Sample times are marked by the $\times$ symbols.
+                \end{column}
+            \end{columns}
+        \end{block}
+
+        % Block 4
+        \begin{block}{Analytical}
+            %\begin{table}
+            %    \rowcolors{1}{CVCWhite}{CVCLightGrey}
+            \centering
+            \footnotesize
+            \input{__WQTable__}
+            %\end{table}
+        \end{block}
+
+    \end{frame}
+\end{document}

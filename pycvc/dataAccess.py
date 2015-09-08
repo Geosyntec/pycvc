@@ -1,6 +1,8 @@
 import os
 import sys
 import glob
+from pkg_resources import resource_filename
+
 
 import numpy as np
 from scipy import interpolate
@@ -402,7 +404,7 @@ class Site(object):
 
         # properties
         if templateISR is None:
-            templateISR = "../templates/template_isr.tex"
+            templateISR = resource_filename("pycvc.tex", "template_isr.tex")
         self._templateISR = templateISR
         self._drainagearea = None
         self._wqstd = None
@@ -1132,7 +1134,7 @@ class Site(object):
         for sample in self.samples[sampletype]:
             if sample.storm is not None:
                 sample.templateISR = self.templateISR
-                sample.compileISR(version=version, clean=True)
+                tex = sample.compileISR(version=version, clean=True)
 
 
 @np.deprecate

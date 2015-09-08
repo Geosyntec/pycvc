@@ -121,14 +121,22 @@ At that point, `pycvc` and all of its dependencies are installed.
 
 
 ## Using `pycvc`
-With `pycvc` and all of its dependencies installed, they best way to get started is by downloading and using the (notebook)[https://github.com/Geosyntec/pycvc/blob/master/examples/Data%20Summaries.ipynb] in this repository.
-Once you've downloaded the notebook to a convenient place, navigate to that directory in a command prompt, activate the `cvc` conda environment, and start a Jupyer/IPython notebook server. That will look *something* like this:
+With `pycvc` and all of its dependencies installed, they best way to get started is by downloading and using the [notebook](https://github.com/Geosyntec/pycvc/blob/master/examples/Data%20Summaries.ipynb) in this repository.
+
+To do so, you can either use git to clone the entire repository and source code with the cmd:
+```
+git clone https://github.com/Geosyntec/pycvc.git
+```
+
+If cloning through git is not an option, you can download a zip file of everything using the buttons to the right of this webpage. 
+
+Once you've downloaded and unzipped the repository to a convenient place, navigate to the `examples` directory in a command prompt, activate the `cvc` conda environment, and start a Jupyer/IPython notebook server. That will look *something* like this:
 ```
 Microsoft Windows [Version 6.3.9600]
 (c) 2013 Microsoft Corporation. All rights reserved.
 
 C:\Users\phobson
-$ cd Downloads
+$ cd Downloads\pycvc-master\pycvc-master\examples
 
 C:\Users\phobson\Downloads
 $ activate cvc

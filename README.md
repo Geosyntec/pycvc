@@ -123,6 +123,7 @@ At that point, `pycvc` and all of its dependencies are installed.
 ## Using `pycvc`
 With `pycvc` and all of its dependencies installed, they best way to get started is by downloading and using the [notebook](https://github.com/Geosyntec/pycvc/blob/master/examples/Data%20Summaries.ipynb) in this repository.
 
+### Getting CVC Analysis Notebooks (and Source Code)
 To do so, you can either use git to clone the entire repository and source code with the cmd:
 ```
 git clone https://github.com/Geosyntec/pycvc.git
@@ -130,6 +131,7 @@ git clone https://github.com/Geosyntec/pycvc.git
 
 If cloning through git is not an option, you can download a zip file of everything using the buttons to the right of this webpage. 
 
+### Starting a Jupyter Notebook
 Once you've downloaded and unzipped the repository to a convenient place, navigate to the `examples` directory in a command prompt, activate the `cvc` conda environment, and start a Jupyer/IPython notebook server. That will look *something* like this:
 ```
 Microsoft Windows [Version 6.3.9600]
@@ -154,3 +156,13 @@ If that browswer happens to be internet explorer, it is recommended to copy the 
 Then, click the notebook in the list of files and a new browser tab will open with the analysis ready to go.
 
 For more information about Jupyter, check out the [official documentation](http://jupyter.readthedocs.org/en/latest/)
+
+### Configuring the Analysis to use your local database
+The seventh code cell in the notebook titled **Load CVC Database** must be configured to point to your local copy of the CVC database. By default, the code cell is configured as follows:
+```
+cvcdbfile = "C:/users/phobson/Desktop/cvc.accdb"
+cvcdb = pycvc.Database(cvcdbfile, nsqdata, bmpdb, testing=False)
+```
+Modifying the first line to include the path your copy of the database will enable the remainder of the code cells to run.
+Be sure to separate the directories in path with slashes (`/`) instead of the typical backslashes (`\`) found on Windows.
+As an example, `cvcdbfile = "C:/data/cvc.accdb"` will work, but `cvcdbfile = "C:\data\cvc.accdb"` will fail.

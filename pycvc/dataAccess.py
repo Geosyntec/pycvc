@@ -777,7 +777,7 @@ class Site(object):
         sampletype was collected.
         """
         sampletype = _check_sampletype(sampletype)
-        return self.tidy_data.query("sampletype == @sampletype")['Storm Number'].unique()
+        return self.tidy_data.query("sampletype == @sampletype")['storm_number'].unique()
 
     def _get_storms_without_data(self, sampletype='composite'):
         """ Returns all of the storm numbers of storms where no water
@@ -897,7 +897,7 @@ class Site(object):
         overall = self._wq_summary(rescol, seasonal=False, sampletype=sampletype)
         return seasonal.append(overall).sort_index().T
 
-    def medians(self, rescol, sampeltype='composite'):
+    def medians(self, rescol, sampletype='composite'):
         """ Returns a DataFrame of the WQ medians for the given
         sampletype.
         """
@@ -906,8 +906,8 @@ class Site(object):
         median_effluent = (
             self.tidy_data
                 .query("sampletype == @sampletype")
-                .groupby(by=['parameter', 'Season', unitscol])
-                .agg({rescol: 'median', unitscol: 'first'})
+                .groupby(by=['parameter', 'season', unitscol])
+                .agg({rescol: 'median'})
                 .rename(columns={rescol: 'Median Effluent'})
                 .reset_index()
         )

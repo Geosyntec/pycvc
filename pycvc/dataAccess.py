@@ -777,7 +777,7 @@ class Site(object):
         sampletype was collected.
         """
         sampletype = _check_sampletype(sampletype)
-        return self.tidy_data.query("sampletype == @sampletype")['Storm Number'].unique()
+        return self.tidy_data.query("sampletype == @sampletype")['storm_number'].unique()
 
     def _get_storms_without_data(self, sampletype='composite'):
         """ Returns all of the storm numbers of storms where no water
@@ -897,7 +897,7 @@ class Site(object):
         overall = self._wq_summary(rescol, seasonal=False, sampletype=sampletype)
         return seasonal.append(overall).sort_index().T
 
-    def medians(self, rescol, sampeltype='composite'):
+    def medians(self, rescol, sampletype='composite'):
         """ Returns a DataFrame of the WQ medians for the given
         sampletype.
         """
@@ -906,8 +906,8 @@ class Site(object):
         median_effluent = (
             self.tidy_data
                 .query("sampletype == @sampletype")
-                .groupby(by=['parameter', 'Season', unitscol])
-                .agg({rescol: 'median', unitscol: 'first'})
+                .groupby(by=['parameter', 'season', unitscol])
+                .agg({rescol: 'median'})
                 .rename(columns={rescol: 'Median Effluent'})
                 .reset_index()
         )
@@ -962,6 +962,49 @@ class Site(object):
         ]
 
         return loads[final_cols_order].rename(columns=dict(zip(final_cols_order, final_cols)))
+
+    def _unsampled_load_estimates(self):
+        rename_cols = {
+            'peak_precip_intensity': 'peak_precip_intensity_mm_per_hr',
+            'total_precip_depth': 'total_precip_depth_mm',
+            'peak_outflow': 'peak_outflow_L_per_s',
+            'influent median': 'influent_median',
+            'Median Effluent': 'effluent_median'
+        }
+
+        final_cols = [
+            'site', 'sampletype', 'season', 'has_outflow', 'parameter', 'units',
+            'influent_median', 'effluent_median', 'storm_number', 'antecedent_days',
+            'start_date', 'end_date', 'duration_hours', 'peak_precip_intensity_mm_per_hr',
+            'total_precip_depth_mm', 'runoff_m3', 'bypass_m3', 'inflow_m3', 'outflow_m3',
+            'peak_outflow_L_per_s', 'centroid_lag_hours', 'load_units', 'load_factor',
+            'load_runoff', 'load_bypass', 'load_inflow', 'load_outflow'
+          ]
+
+        index = pandas.MultiIndex.from_product(
+            [self.unsampled_storms, self.tidy_data['parameter'].unique()],
+            names=['storm_number', 'parameter']
+        )
+
+        unsamled_loads = (
+            pandas.DataFrame(index=index, columns=['_junk'])
+                  .reset_index()
+                  .merge(self.storm_info, on='storm_number')
+                  .merge(self.influentmedians, on=['parameter', 'season'])
+                  .merge(self.medians('concentration'), on=['parameter', 'season', 'units'])
+                  .assign(site=self.siteid, sampletype='unsampled')
+                  .assign(load_units=lambda df: df['parameter'].apply(lambda p: info.getPOCInfo('cvcname', p, 'load_units')))
+                  .assign(load_factor=lambda df: df['parameter'].apply(lambda p: info.getPOCInfo('cvcname', p, 'load_factor')))
+                  .assign(load_runoff=lambda df: df['load_factor'] * df['runoff_m3'] * df['influent median'])
+                  .assign(load_bypass=lambda df: df['load_factor'] * df['bypass_m3'] * df['influent median'])
+                  .assign(load_inflow=lambda df: df['load_factor'] * df['inflow_m3'] * df['influent median'])
+                  .assign(load_outflow=lambda df: df['load_factor'] * df['outflow_m3'] * df['Median Effluent'])
+                  .rename(columns=rename_cols)
+                  .sort(['parameter', 'storm_number'])
+        )[final_cols]
+
+        return unsamled_loads
+
 
     def prevalence_table(self, sampletype='composite'):
         """ Returns a sample prevalence table for the given sample type.

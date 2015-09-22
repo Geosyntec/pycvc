@@ -198,6 +198,9 @@ POC_dicts = [
     },
 ]
 
+import numpy as np
+import pandas
+
 def getPOCs():
     return [p['cvcname'] for p in POC_dicts]
 
@@ -210,4 +213,13 @@ def getPOCInfo(critcol, critval, valcol):
     else:
         return values[0][valcol]
 
+def wqstd_template():
+    seasons = ['summer', 'autumn', 'winter', 'spring']
+    _template = pandas.DataFrame({
+        'parameter': [p['cvcname'] for p in POC_dicts],
+        'units': [p['conc_units']['plain'] for p in POC_dicts]
+    })
 
+    df = pandas.concat([_template.assign(season=s) for s in seasons])
+    df['influent median'] = np.nan
+    return df

@@ -1244,6 +1244,7 @@ class WQMegaFigure(object):
                                         startcols=(0,), removelegend=True, seasonal=True,
                                         load=load)
 
+
 @np.deprecate
 class SummaryAppendix(object):
     def __init__(self, siteobjects, sampletype, parameterdict, paramgrouplist,

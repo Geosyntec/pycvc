@@ -3,7 +3,7 @@
 ## Installation
 The best way to install `pycvc` and get started is by through the Anaconda distribution of Python and its `conda` package manager.
 
-### Download Anaconda
+### Python - Download Anaconda
 Anaconda is a free and open-source distribution of Python built and maintained by Continuum Analytics.
 Windows, Mac OS X, and Linux users can download the Anaconda installers [here](http://continuum.io/downloads).
 
@@ -30,19 +30,42 @@ conda 3.16.0
 
 Leave this prompt/terminal open as we will need it throughout the installation process.
 
+### Non-Python Dependencies
+There are a few additional software requirements related to accessing the data from python.
+The first is of course, a modern version Microsoft Access that supports the ".accdb" file format.
+If this software is unavailable, it *may* be possible to scrape by with the redistributable [Access Database Engine](http://www.microsoft.com/en-us/download/details.aspx?id=13255).
+
+The second software dependency is an Open Database Connectivity (ODBC) driver that supports your version of Microsoft Access.
+Typically, these drivers are installed along with Microsoft Office.
+If they are not, you can download them [directly from Microsoft](http://www.microsoft.com/en-us/download/details.aspx?id=13255).
+
+The final non-python dependency is optional.
+On Windows, [MiKTeX](http://miktex.org/download) can be used to compile LaTeX documents and manage third-party LaTeX extensions.
+Thus installing MiKTeX and [adding it to the system path](http://www.howtogeek.com/118594/how-to-edit-your-system-path-for-easy-command-line-access/) will enable `pycvc` to compile the Individual Storm Reports (ISRs) into stand-alone PDFs.
+If `pycvc` cannot find the required executables that are installed with MiKTeX (e.g., `pdflatex`), `pycvc` will issue a non-fatal warning alerting the user.
+In such a case, all of the tables and figures that comprise ISRs will be generated, but as individual CSV and PNG files.
+
 ## Setting up the `pycvc` environment
-After successfully installing Anaconda, it's type to configure Anaconda and create a new "environment" for the CVC data analysis tools with custom python extensions.
+After successfully installing Anaconda and the other dependencies, it's time to configure Anaconda and create a new "environment" for the CVC data analysis tools with custom python extensions.
 
 ### Configuration
 Before beginning, we need to tell the `conda` package manager to look at our custom channel for our project-specific packages.
-To do this, execute the command `conda config --add channels phobson`.
-If this command is successful, not output will be printed to the prompt/terminal.
+To do this, execute the following command:
+```
+conda config --add channels phobson
+```
+
+If this command is successful, no output will be printed to the prompt/terminal.
 
 ### Create a CVC-specific environment
 Now we need to install `pycvc` and its dependencies inside an isolated `conda` environment.
 We do this in an isolated environment to prevent dependency-conflicts with other software installed on the system.
 
-To create a new environment for `pycvc`, execute the following command: `conda create --name=cvc python=3.4 jupyter nose`.
+To create a new environment for `pycvc`, execute the following command:
+```
+conda create --name=cvc python=3.4 jupyter nose
+```
+
 The system will prompt you to confirm that you would like to download and install Python version 3.4, and the latest versions of `jupyter` (for interactive code execution), `nose` (for running tests), and all of their dependencies into a new environment called `cvc`.
 Hit "y" and then the *enter* key to confirm.
 The prompt will keep track of the progress of the download and installation process.
@@ -132,6 +155,7 @@ $ conda update --all
 
 
 ## Using `pycvc`
+<<<<<<< HEAD
 With `pycvc` and all of its dependencies installed, they best way to get started is by downloading and using the [notebook](https://github.com/Geosyntec/pycvc/blob/master/examples/Data%20Summaries.ipynb) in this repository.
 
 ### Getting CVC Analysis Notebooks (and Source Code)
@@ -140,10 +164,14 @@ To do so, you can either use git to clone the entire repository and source code 
 git clone https://github.com/Geosyntec/pycvc.git
 ```
 
-If cloning through git is not an option, you can download a zip file of everything using the buttons to the right of this webpage. 
+If cloning through git is not an option, you can download a zip file of everything using the buttons to the right of this webpage.
 
 ### Starting a Jupyter Notebook
 Once you've downloaded and unzipped the repository to a convenient place, navigate to the `examples` directory in a command prompt, activate the `cvc` conda environment, and start a Jupyer/IPython notebook server. That will look *something* like this:
+=======
+With `pycvc` and all of its dependencies installed, they best way to get started is by downloading and using the [notebook](https://github.com/Geosyntec/pycvc/blob/master/examples/Data%20Summaries.ipynb]) in this repository.
+Once you've downloaded the notebook to a convenient place, navigate to that directory in a command prompt, activate the `cvc` conda environment, and start a Jupyer/IPython notebook server. That will look *something* like this:
+
 ```
 Microsoft Windows [Version 6.3.9600]
 (c) 2013 Microsoft Corporation. All rights reserved.
@@ -162,9 +190,10 @@ $ ipython notebook
 [I 09:04:51.902 NotebookApp] The IPython Notebook is running at: http://localhost:8888/
 [I 09:04:51.902 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
 ```
-At that point, your default web browser (preferably not Internet Explorer) will pop up. 
-If that browswer happens to be internet explorer, it is recommended to copy the notebook server's URL into a modern browswer like Chrome or Firefox.
+At that point, your default web browser (preferably not Internet Explorer) will pop up.
+If that browswer happens to be internet explorer, it is recommended to copy the notebook server's URL into a modern browser like Chrome or Firefox.
 Then, click the notebook in the list of files and a new browser tab will open with the analysis ready to go.
+
 
 For more information about Jupyter, check out the [official documentation](http://jupyter.readthedocs.org/en/latest/)
 

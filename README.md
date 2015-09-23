@@ -31,19 +31,26 @@ conda 3.16.0
 Leave this prompt/terminal open as we will need it throughout the installation process.
 
 ### Non-Python Dependencies
+#### Microsoft Access
 There are a few additional software requirements related to accessing the data from python.
 The first is of course, a modern version Microsoft Access that supports the ".accdb" file format.
 If this software is unavailable, it *may* be possible to scrape by with the redistributable [Access Database Engine](http://www.microsoft.com/en-us/download/details.aspx?id=13255).
 
+#### ODBC Drivers
 The second software dependency is an Open Database Connectivity (ODBC) driver that supports your version of Microsoft Access.
 Typically, these drivers are installed along with Microsoft Office.
 If they are not, you can download them [directly from Microsoft](http://www.microsoft.com/en-us/download/details.aspx?id=13255).
 
-The final non-python dependency is optional.
-On Windows, [MiKTeX](http://miktex.org/download) can be used to compile LaTeX documents and manage third-party LaTeX extensions.
+#### LaTeX Implementation (optional)
+On Windows, [MiKTeX](http://miktex.org/download) can optionally be used to compile LaTeX documents and manage third-party LaTeX extensions.
 Thus installing MiKTeX and [adding it to the system path](http://www.howtogeek.com/118594/how-to-edit-your-system-path-for-easy-command-line-access/) will enable `pycvc` to compile the Individual Storm Reports (ISRs) into stand-alone PDFs.
 If `pycvc` cannot find the required executables that are installed with MiKTeX (e.g., `pdflatex`), `pycvc` will issue a non-fatal warning alerting the user.
 In such a case, all of the tables and figures that comprise ISRs will be generated, but as individual CSV and PNG files.
+
+#### Source code management
+Directly downloading and managing the source code of this project is best done through software known as git.
+Github itself has very thorough [documentation on setting up and use git](https://help.github.com/articles/set-up-git/).
+See also the [contributing file](https://github.com/Geosyntec/pycvc/blob/master/CONTRIBUTING.md) for more links to information on working with python source code.
 
 ## Setting up the `pycvc` environment
 After successfully installing Anaconda and the other dependencies, it's time to configure Anaconda and create a new "environment" for the CVC data analysis tools with custom python extensions.
@@ -200,3 +207,21 @@ cvcdb = pycvc.Database(cvcdbfile, nsqdata, bmpdb, testing=False)
 Modifying the first line to include the path your copy of the database will enable the remainder of the code cells to run.
 Be sure to separate the directories in path with slashes (`/`) instead of the typical backslashes (`\`) found on Windows.
 As an example, `cvcdbfile = "C:/data/cvc.accdb"` will work, but `cvcdbfile = "C:\data\cvc.accdb"` will fail.
+
+## Installing from source
+It is recommended that you use `pip` if you wish to install `pycvc` from source.
+To set that up, first clone the repository as discussed above, and then use `pip install`
+```
+git clone https://github.com/Geosyntec/pycvc.git
+cd pycvc
+activate cvc
+pip install .  # the "." means the current directory
+```
+
+The above procedure copies and compiles deep inside your python's installation folders.
+Alternatively, if you want to modify the source code and conveniently test out the changes you've made, add and `-e` (for editable) flag to the install command:
+```
+pip install -e .
+```
+When you do that, python simply creates a link in its installation directory to your clone repository.
+So any modification you make to the source code will be reflected every time you restart your python interpreter (the jupyer notebook, most likely).

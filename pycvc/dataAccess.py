@@ -3,7 +3,6 @@ import sys
 import glob
 from pkg_resources import resource_filename
 
-
 import numpy as np
 from scipy import interpolate
 import pandas
@@ -19,8 +18,6 @@ from . import viz
 
 # CVC-specific wqio.events subclasses
 from .samples import GrabSample, CompositeSample, Storm
-
-#from .external import nsqdtable, getBMPEffluentMedian
 
 LITERS_PER_CUBICMETER = 1000.
 MILLIMETERS_PER_METER = 1000.
@@ -1004,7 +1001,6 @@ class Site(object):
         )[final_cols]
 
         return unsamled_loads
-
 
     def prevalence_table(self, sampletype='composite'):
         """ Returns a sample prevalence table for the given sample type.

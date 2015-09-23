@@ -12,16 +12,9 @@ from . import viz
 import wqio
 from wqio import utils
 
-class LaTeXDirecory(object):
-    def __init__(self, texpath):
-        self.home = os.getcwd()
-        self.texpath = texpath
 
-    def __enter__(self):
-        os.chdir(self.texpath)
-
-    def __exit__(self, *args):
-        os.chdir(self.home)
+class LaTeXDirecory(utils.LaTeXDirecory):
+    pass
 
 
 class _WQSample_Mixin(wqio.core.samples._basic_wq_sample):
@@ -160,6 +153,7 @@ class _WQSample_Mixin(wqio.core.samples._basic_wq_sample):
             ]
             wqtable = wqtable[cols_to_keep].drop_duplicates()
 
+            # pragma: no cover
             if writeToFiles:
                 csvpath = os.path.join('output', 'csv', self.wq_tex_table + '.csv')
                 texpath = os.path.join('output', 'tex', 'ISR', self.wq_tex_table + '.tex')
@@ -247,7 +241,7 @@ class _WQSample_Mixin(wqio.core.samples._basic_wq_sample):
         if version.lower() not in ('draft', 'final'):
             raise ValueError("Report version must be 'draft' or 'final")
 
-        if version == 'draft':
+        if version.lower() == 'draft':
             watermark = "\\usepackage{draftwatermark}\n\\SetWatermarkLightness{0.9}"
             draft = ' Draft'
         else:
@@ -494,6 +488,7 @@ class Storm(wqio.Storm):
 
         return table
 
+    @np.deprecate
     def wideTableHeaders(self):
         wide_header = (
             '"Storm Date",'
@@ -511,6 +506,7 @@ class Storm(wqio.Storm):
         )
         return wide_header
 
+    @np.deprecate
     def wideTableLine(self):
         """ Creates a line to the "wide" table summarizing all storms
         for a site.
@@ -544,6 +540,7 @@ class Storm(wqio.Storm):
               )
         return txt
 
+    @np.deprecate
     def thinTableHeaders(self):
         thin_header = (
             '"Storm Date",'
@@ -556,6 +553,7 @@ class Storm(wqio.Storm):
         )
         return thin_header
 
+    @np.deprecate
     def thinTableLine(self):
         """ Creates a line to the "thin" table summarizing all storms
         for a site.

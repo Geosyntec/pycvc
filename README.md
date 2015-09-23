@@ -1,5 +1,9 @@
 # `pycvc`: Python Analysis Tools for the CVC Dataset
 
+## Quick-start guides
+Advanced users can just straight to the [condensed version of this document](https://github.com/Geosyntec/pycvc/blob/master/BRIEF_SETUP.md).
+New users should continue reading.
+
 ## Installation
 The best way to install `pycvc` and get started is by through the Anaconda distribution of Python and its `conda` package manager.
 

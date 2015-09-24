@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/Geosyntec/pycvc.svg?branch=master)](https://travis-ci.org/Geosyntec/pycvc)
+
 # `pycvc`: Python Analysis Tools for the CVC Dataset
 
 ## Quick-start guides

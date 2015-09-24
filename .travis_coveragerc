@@ -1,0 +1,27 @@
+# .coveragerc to control coverage.py
+[run]
+source = pycvc
+branch = True
+include = pycvc/*.py
+omit =
+    pycvc/tests/*
+    #pycvc/testutils/*
+
+[report]
+include = pycvc/*.py
+ignore_errors = True
+omit =
+    pycvc/tests/*
+    #pycvc/testutils/*
+
+# Regexes for lines to exclude from consideration
+exclude_lines =
+    # Have to re-enable the standard pragma
+    pragma: no cover
+    @np.deprecate
+
+    # Don't complain if tests don't hit defensive assertion code:
+    raise NotImplementedError
+    except NotImplementedError
+    # Ignore pass
+    pass

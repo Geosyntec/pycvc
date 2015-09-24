@@ -121,9 +121,9 @@ Again, note that Mac OS X and Linux users will need to use `source deactivate`.
 
 ### Installing `pycvc` and the remaining dependencies
 `pycvc` has three main dependencies:
-  1. `wqio`
-  2. `pybmpdb`
-  3. `pynsqd`
+  1. [`wqio`](https://github.com/Geosyntec/wqio)
+  2. [`pybmpdb`](https://github.com/Geosyntec/pybmpdb)
+  3. [`pynsqd`](https://github.com/Geosyntec/pynsqd)
 
 All three of these libraries are open source, written/maintained by Geosyntec, and installable through `conda`.
 To install them into the `cvc` environment, confirm that the `cvc` environment is active and use `conda install` in the following manner:

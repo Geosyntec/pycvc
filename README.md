@@ -1,4 +1,6 @@
 [![Build Status](https://travis-ci.org/Geosyntec/pycvc.svg?branch=master)](https://travis-ci.org/Geosyntec/pycvc)
+[![Binstar Badge](https://anaconda.org/phobson/pycvc/badges/installer/conda.svg)](https://conda.anaconda.org/phobson)
+[![Binstar Badge](https://anaconda.org/phobson/pycvc/badges/license.svg)](https://anaconda.org/phobson/pycvc)
 
 # `pycvc`: Python Analysis Tools for the CVC Dataset
 

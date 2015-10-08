@@ -11,6 +11,7 @@ import pynsqd
 
 from .info import POC_dicts
 
+
 bmpcats_to_use = [
     'Bioretention', 'Detention Basin',
     'Green Roof', 'Biofilter',
@@ -19,6 +20,7 @@ bmpcats_to_use = [
     'Retention Pond', 'Wetland Basin',
     'Wetland Channel'
 ]
+
 
 class _external_source(object):
     def boxplot(self, ax, position, xlabels, **selection_kwds):
@@ -61,12 +63,14 @@ class nsqd(_external_source):
         if self._data is None:
             self._data = (
                 pynsqd.NSQData()
-                    .data
-                    .query("parameter in @params")
-                    .query("fraction == 'Total'")
-                    .query("primary_landuse != 'Unknown'")
-                    .query("epa_rain_zone == 1")
-                    .assign(station='outflow')
+                      .data
+                      .query("parameter in @params")
+                      .query("fraction == 'Total'")
+                      .query("primary_landuse != 'Unknown'")
+                      .query("epa_rain_zone == 1")
+                      .assign(station='outflow')
+                      .assign(cvcparam=lambda df: df['parameter'].apply(self._get_cvc_parameter))
+                      .assign(season=lambda df: df['start_date'].apply(wqio.utils.getSeason))
             )
         return self._data
 
@@ -81,30 +85,27 @@ class nsqd(_external_source):
                 'start_date',
                 'season',
                 'station',
-                'parameter',
+                'cvcparam',
+                'units',
             ]
-            groupcols = ['primary_landuse']
+            groupcols = ['primary_landuse', 'season']
             d = self.data.groupby(by=indexcols).first()
-            dc = wqio.DataCollection(d, ndval='<', othergroups=groupcols)
+            dc = wqio.DataCollection(d, ndval='<', othergroups=groupcols, paramcol='cvcparam')
+
             self._datacollection = dc
         return  self._datacollection
 
     @property
     def medians(self):
-        final_columns = ['season', 'cvcparam', 'res', 'units']
         if self._medians is None:
             self._medians = (
-                self.data
-                    .assign(cvcparam=self.data['parameter'].apply(self._get_cvc_parameter))
-                    .assign(season=self.data['start_date'].apply(utils.getSeason))
-                    .groupby(by=['primary_landuse', 'season', 'cvcparam', 'units'])
-                    .median()
-                    .xs(['Residential'], level=['primary_landuse'])
-                    .reset_index()
-                    .select(lambda c: c in final_columns, axis=1)
-                    .rename(columns={'res': 'NSQD Medians', 'cvcparam': 'parameter'})
-                    .dropna(subset=['parameter'])
-            )
+                self.datacollection
+                   .medians['outflow']
+                   .xs(['Residential'], level=['primary_landuse'])
+                   .pipe(np.round, 3)
+                   .reset_index()
+                   .rename(columns={'cvcparam': 'parameter', 'stat': 'NSQD Medians'})
+                )
 
         return self._medians
 
@@ -118,17 +119,7 @@ class nsqd(_external_source):
             cvcparam = np.nan
         return cvcparam
 
-    def getMedian(self, landuse, parameter):
-        try:
-            nsqd_param =list(filter(
-                lambda p: p['cvcname'] == parameter, POC_dicts
-            ))[0]['nsqdname']
-            return self.data.getLanduseMedian(landuse, nsqd_param)
-        except (IndexError, KeyError):
-            return np.nan
 
-
-# read in BMP database
 class bmpdb(_external_source):
     def __init__(self, color, marker):
         self.color = color
@@ -208,18 +199,6 @@ class bmpdb(_external_source):
             bmpparam = np.nan
 
         return bmpparam
-
-    def getMedians(self, bmpcategory, parameter):
-        try:
-            bmp_param = list(filter(
-                lambda p: p['cvcname'] == parameter, POC_dicts
-            ))[0]['bmpname']
-            return self.datacollection.medians.loc[
-                (bmp_param, bmpcategory),
-                ('outflow', 'stat')
-            ]
-        except (IndexError, KeyError):
-            return np.nan
 
 
 def loadExternalData(colors, markers):

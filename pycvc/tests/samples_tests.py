@@ -19,7 +19,7 @@ from wqio.tests.core_tests import samples_tests, hydro_tests
 from wqio.tests.utils_tests import misc_tests
 
 
-class test_LaTeXDirecory(misc_tests.test_LaTeXDirecory):
+class test_LaTeXDirectory(misc_tests.test_LaTeXDirectory):
     pass
 
 

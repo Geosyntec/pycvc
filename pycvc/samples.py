@@ -13,7 +13,7 @@ import wqio
 from wqio import utils
 
 
-class LaTeXDirecory(utils.LaTeXDirecory):
+class LaTeXDirectory(utils.LaTeXDirectory):
     pass
 
 

@@ -363,18 +363,9 @@ class _WQSample_Mixin(wqio.core.samples._basic_wq_sample):
         texdir, texdoc = os.path.split(texpath)
 
         if wqio.testing.checkdep_tex() is not None:
-            with LaTeXDirecory(texdir) as TEXDIR:
-                # use ``pdflatex to compile the document
-                tex = subprocess.call(['pdflatex', texdoc, '--quiet'], shell=False,
-                                      stdout=subprocess.PIPE,
-                                      stderr=subprocess.PIPE)
+            with LaTeXDirectory(texdir) as latex:
+                tex = latex.compile(texdoc)
 
-            if clean:
-                extensions = ['aux', 'log', 'nav', 'out', 'snm', 'toc']
-                for ext in extensions:
-                    junkfiles = glob.glob('*.{}'.format(ext))
-                    for junk in junkfiles:
-                        os.remove(junk)
         else:
             tex = None
 

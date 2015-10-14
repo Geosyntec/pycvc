@@ -1018,7 +1018,7 @@ class Site(object):
                   .assign(load_inflow=lambda df: df['load_factor'] * df['inflow_m3'] * df['influent median'])
                   .assign(load_outflow=lambda df: df['load_factor'] * df['outflow_m3'] * df['Median Effluent'])
                   .rename(columns=rename_cols)
-                  .sort(['parameter', 'storm_number'])
+                  .sort_values(by=['parameter', 'storm_number'])
         )[final_cols]
 
         return unsamled_loads

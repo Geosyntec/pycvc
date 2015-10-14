@@ -172,14 +172,9 @@ class _WQSample_Mixin(wqio.core.samples._basic_wq_sample):
         with open(tex, 'r') as texfile:
             texstring = texfile.read()
 
-        #texstring = texstring.replace(r"\midrule", "")
         texstring = texstring.replace(r"\toprule", r"\midrule")
         texstring = texstring.replace(r"\bottomrule", r"\midrule")
-
-        eagertex = r"\$\textasciicircum\{\textbackslashmathrm\{st\}\}\$"
-        bettertex = r"$^\mathrm{st}$"
-        texstring = texstring.replace(eagertex, bettertex)
-        texstring = texstring.replace(" nan ", " -- ")
+        texstring = utils.sanitizeTex(texstring).replace(" nan ", " -- ")
         with open(tex, 'w') as texfile:
             texfile.write(texstring)
 

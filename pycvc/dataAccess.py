@@ -427,6 +427,27 @@ class Site(object):
         self._samples = None
 
     @property
+    def runoff_fxn(self):
+        return self._runoff_fxn
+    @runoff_fxn.setter
+    def runoff_fxn(self, value):
+        self._runoff_fxn = value
+
+    @property
+    def bypass_fxn(self):
+        return self._bypass_fxn
+    @bypass_fxn.setter
+    def bypass_fxn(self, value):
+        self._bypass_fxn = value
+
+    @property
+    def inflow_fxn(self):
+        return self._inflow_fxn
+    @inflow_fxn.setter
+    def inflow_fxn(self, value):
+        self._inflow_fxn = value
+
+    @property
     def wqstd(self):
         """ Water quality guidelines/standards """
         if self._wqstd is None:
@@ -997,7 +1018,7 @@ class Site(object):
                   .assign(load_inflow=lambda df: df['load_factor'] * df['inflow_m3'] * df['influent median'])
                   .assign(load_outflow=lambda df: df['load_factor'] * df['outflow_m3'] * df['Median Effluent'])
                   .rename(columns=rename_cols)
-                  .sort(['parameter', 'storm_number'])
+                  .sort_values(by=['parameter', 'storm_number'])
         )[final_cols]
 
         return unsamled_loads

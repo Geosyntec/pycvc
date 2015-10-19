@@ -70,9 +70,9 @@ class nsqd(_external_source):
             self._data = (
                 pynsqd.NSQData()
                       .data
+                      .query("primary_landuse != 'Unknown'")
                       .query("parameter in @params")
                       .query("fraction == 'Total'")
-                      .query("primary_landuse != 'Unknown'")
                       .query("epa_rain_zone == 1")
                       .assign(station='outflow')
                       .assign(cvcparam=lambda df: df['parameter'].apply(self._get_cvc_parameter))
@@ -109,7 +109,6 @@ class nsqd(_external_source):
 
         return self._medians
 
-
     @property
     def seasonal_datacollection(self):
         if self._seasonal_datacollection is None:
@@ -129,7 +128,7 @@ class nsqd(_external_source):
                     .xs(['Residential'], level=['primary_landuse'])
                     .pipe(np.round, 3)
                     .reset_index()
-                    .rename(columns={'stat': 'NSQD Medians'})
+                    .rename(columns={'stat': 'NSQD Median'})
                 )
 
         return self._seasonal_medians
@@ -182,15 +181,29 @@ class bmpdb(_external_source):
     @property
     def data(self):
         if self._data is None:
-            self._data = self.datacollection.tidy.copy()
+            index_cache = self.table.data.index.names
+            self._data = (
+                self.table
+                    .data
+                    .reset_index()
+                    .query("station == 'outflow'")
+                    .query("epazone == 1")
+                    .assign(bmpparam=lambda df: df['parameter'].apply(self._get_cvc_parameter))
+                    .drop('parameter', axis=1)
+                    .rename(columns={'bmpparam': 'parameter'})
+                    .set_index(index_cache)
+            )
         return self._data
 
     @property
     def datacollection(self):
         if self._datacollection is None:
-            groups = ['category', 'units']
-            self._datacollection = self.table.to_DataCollection(othergroups=groups)
-        return self._datacollection
+            groupcols = ['units', 'category']
+            dc = wqio.DataCollection(self.data, ndval='ND', othergroups=groupcols,
+                                     paramcol='parameter')
+
+            self._datacollection = dc
+        return  self._datacollection
 
     @property
     def medians(self):

@@ -439,7 +439,6 @@ class Site(object):
         self._unsampled_storms = None
         self._storms = None
         self._storm_info = None
-        self._storm_stats = None
         self._tidy_data = None
         self._sample_info = None
         self._all_samples = None
@@ -663,33 +662,32 @@ class Site(object):
         """ DataFrame summarizing each storm event """
         intensity_to_depth = self.hydroPeriodMinutes / wqio.hydro.MIN_PER_HOUR
         volume_to_flow_liters = 1.0 / (wqio.hydro.SEC_PER_MINUTE * self.hydroPeriodMinutes)
+        full_area = self.drainagearea.total_area + self.drainagearea.bmp_area
+
+        def fake_peak_inflow(row):
+            precip = row['peak_precip_intensity']
+            return self.drainagearea.simple_method(precip * intensity_to_depth) * volume_to_flow_liters
 
         if self._storm_info is None:
             stormstats = (
                 self.hydrodata
                     .storm_stats
-                    .fillna(value={'Total Precip Depth': 0})
                     .rename(columns=lambda c: c.lower().replace(' ', '_'))
+                    .assign(grouped_season=lambda df: df['start_date'].apply(_grouped_seasons))
                     .rename(columns={'total_outflow_volume': 'outflow_m3'})
                     .fillna(value={'outflow_m3': 0})
-                    .assign(sm_est_peak_inflow=lambda df: df['peak_precip_intensity'].apply(
-                        lambda x: self.drainagearea.simple_method(x * intensity_to_depth) * volume_to_flow_liters
-                ))
-            )
-
-            full_area = self.drainagearea.total_area + self.drainagearea.bmp_area
-            stormstats = (
-                stormstats
-                    .assign(outflow_mm=stormstats['outflow_m3'] / full_area * MILLIMETERS_PER_METER)
-                    .assign(runoff_m3=stormstats.apply(self.runoff_fxn, axis=1))
-                    .assign(bypass_m3=stormstats.apply(self.bypass_fxn, axis=1))
-                    .assign(inflow_m3=stormstats.apply(self.inflow_fxn, axis=1))
-                    .assign(has_outflow=stormstats['outflow_m3'].apply(lambda r: 'Yes' if r > 0.1 else 'No'))
+                    .assign(sm_est_peak_inflow=lambda df: df.apply(fake_peak_inflow, axis=1))
+                    .assign(outflow_mm=lambda df: df['outflow_m3'] / full_area * MILLIMETERS_PER_METER)
+                    .assign(runoff_m3=lambda df: df.apply(self.runoff_fxn, axis=1))
+                    .assign(bypass_m3=lambda df: df.apply(self.bypass_fxn, axis=1))
+                    .assign(inflow_m3=lambda df: df.apply(self.inflow_fxn, axis=1))
+                    .assign(has_outflow=lambda df: df['outflow_m3'].apply(lambda r: 'Yes' if r > 0.1 else 'No'))
             )
 
             col_order = [
-                'storm_number', 'season', 'antecedent_days', 'start_date', 'end_date',
-                'duration_hours', 'peak_precip_intensity', 'total_precip_depth',
+                'site', 'storm_number','year', 'season', 'grouped_season',
+                'antecedent_days', 'start_date', 'end_date', 'duration_hours',
+                'peak_precip_intensity', 'total_precip_depth',
                 'runoff_m3', 'bypass_m3', 'inflow_m3', 'outflow_m3', 'outflow_mm',
                 'peak_outflow', 'centroid_lag_hours', 'has_outflow', 'sm_est_peak_inflow'
             ]
@@ -698,16 +696,38 @@ class Site(object):
 
         return self._storm_info
 
-    @property
-    def storm_stats(self):
-        """ Statistics summarizing all the storm events """
-        if self._storm_stats is None:
-            descr = self.storm_info.groupby(by=['season']).describe()
-            descr.index.names = ['season', 'stat']
-            descr = descr.select(lambda c: c != 'storm_number', axis=1)
-            descr.columns.names = ['quantity']
-            self._storm_stats = descr.stack(level='quantity').unstack(level='stat')
-        return self._storm_stats
+    def storm_stats(self, timegroup=None):
+        """ Statistics summarizing all the storm events
+
+        Parameters
+        ----------
+        timegroup : string, optional
+            Optional string that defined how results should be group
+            temporally. Valid options are "season", "grouped_season",
+            and year. Default behavior does no temporal grouping.
+
+        Returns
+        -------
+        summary : pandas.DataFrame
+
+        """
+
+        timecol = _check_timegroup(timegroup)
+        if timecol is None:
+            groups = ['site']
+        else:
+            groups = ['site', timecol]
+
+        descr = self.storm_info.groupby(by=groups).describe()
+        descr.index.names = groups + ['stat']
+        descr = descr.select(lambda c: c != 'storm_number', axis=1)
+        descr.columns.names = ['quantity']
+        storm_stats = (
+            descr.stack(level='quantity')
+                 .unstack(level='stat')
+                 .xs(self.siteid, level='site')
+        )
+        return storm_stats
 
     @property
     def tidy_data(self):

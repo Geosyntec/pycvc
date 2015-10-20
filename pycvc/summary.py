@@ -821,7 +821,7 @@ class WQComparison(object):
             raise ValueError("which must be either, 'BMPDB' or 'NSQD'")
 
         extparamname = info.getPOCInfo('cvcname', self.cvcparameter, key)
-        selection_kwds = dict(squeeze=True, parameter=extparamname, station='outflow')
+        selection_kwds = dict(squeeze=True, parameter=self.cvcparameter, station='outflow')
 
         # if the parameter exists and there's enough site data (N >= 5)
         if self.max_detects >= 5:

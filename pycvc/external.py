@@ -11,6 +11,7 @@ import pynsqd
 
 from .info import POC_dicts
 
+
 bmpcats_to_use = [
     'Bioretention', 'Detention Basin',
     'Green Roof', 'Biofilter',
@@ -19,6 +20,7 @@ bmpcats_to_use = [
     'Retention Pond', 'Wetland Basin',
     'Wetland Channel'
 ]
+
 
 class _external_source(object):
     def boxplot(self, ax, position, xlabels, **selection_kwds):
@@ -43,9 +45,15 @@ class nsqd(_external_source):
         self.color = color
         self.marker = marker
         self._data = None
-        self._medians = None
         self._datacollection = None
+        self._medians = None
+        self._seasonal_datacollection = None
+        self._seasonal_medians = None
         self.label_col = 'primary_landuse'
+        self.index_cols = [
+            'epa_rain_zone', 'location_code', 'station_name', 'primary_landuse',
+            'start_date', 'season', 'station', 'parameter', 'units',
+        ]
 
     @property
     def landuses(self):
@@ -57,56 +65,73 @@ class nsqd(_external_source):
 
     @property
     def data(self):
-        params = [p['nsqdname'] for p in POC_dicts]
         if self._data is None:
+            params = [p['nsqdname'] for p in POC_dicts]
             self._data = (
                 pynsqd.NSQData()
-                    .data
-                    .query("parameter in @params")
-                    .query("fraction == 'Total'")
-                    .query("primary_landuse != 'Unknown'")
-                    .query("epa_rain_zone == 1")
-                    .assign(station='outflow')
+                      .data
+                      .query("primary_landuse != 'Unknown'")
+                      .query("parameter in @params")
+                      .query("fraction == 'Total'")
+                      .query("epa_rain_zone == 1")
+                      .assign(station='outflow')
+                      .assign(cvcparam=lambda df: df['parameter'].apply(self._get_cvc_parameter))
+                      .assign(season=lambda df: df['start_date'].apply(wqio.utils.getSeason))
+                      .drop('parameter', axis=1)
+                      .rename(columns={'cvcparam': 'parameter'})
+                      .groupby(by=self.index_cols)
+                      .first()
+                      .reset_index()
             )
         return self._data
 
     @property
     def datacollection(self):
         if self._datacollection is None:
-            indexcols = [
-                'epa_rain_zone',
-                'location_code',
-                'station_name',
-                'primary_landuse',
-                'start_date',
-                'season',
-                'station',
-                'parameter',
-            ]
-            groupcols = ['primary_landuse']
-            d = self.data.groupby(by=indexcols).first()
-            dc = wqio.DataCollection(d, ndval='<', othergroups=groupcols)
+            groupcols = ['units', 'primary_landuse']
+            dc = wqio.DataCollection(self.data.set_index(self.index_cols), ndval='<',
+                                     othergroups=groupcols, paramcol='parameter')
+
             self._datacollection = dc
         return  self._datacollection
 
     @property
     def medians(self):
-        final_columns = ['season', 'cvcparam', 'res', 'units']
         if self._medians is None:
             self._medians = (
-                self.data
-                    .assign(cvcparam=self.data['parameter'].apply(self._get_cvc_parameter))
-                    .assign(season=self.data['start_date'].apply(utils.getSeason))
-                    .groupby(by=['primary_landuse', 'season', 'cvcparam', 'units'])
-                    .median()
+                self.datacollection
+                    .medians['outflow']
                     .xs(['Residential'], level=['primary_landuse'])
+                    .pipe(np.round, 3)
                     .reset_index()
-                    .select(lambda c: c in final_columns, axis=1)
-                    .rename(columns={'res': 'NSQD Medians', 'cvcparam': 'parameter'})
-                    .dropna(subset=['parameter'])
-            )
+                    .rename(columns={'stat': 'NSQD Medians'})
+                )
 
         return self._medians
+
+    @property
+    def seasonal_datacollection(self):
+        if self._seasonal_datacollection is None:
+            groupcols = ['units', 'primary_landuse', 'season']
+            dc = wqio.DataCollection(self.data.set_index(self.index_cols), ndval='<',
+                                     othergroups=groupcols, paramcol='parameter')
+
+            self._seasonal_datacollection = dc
+        return  self._seasonal_datacollection
+
+    @property
+    def seasonal_medians(self):
+        if self._seasonal_medians is None:
+            self._seasonal_medians = (
+                self.seasonal_datacollection
+                    .medians['outflow']
+                    .xs(['Residential'], level=['primary_landuse'])
+                    .pipe(np.round, 3)
+                    .reset_index()
+                    .rename(columns={'stat': 'NSQD Median'})
+                )
+
+        return self._seasonal_medians
 
     @staticmethod
     def _get_cvc_parameter(nsqdparam):
@@ -118,17 +143,7 @@ class nsqd(_external_source):
             cvcparam = np.nan
         return cvcparam
 
-    def getMedian(self, landuse, parameter):
-        try:
-            nsqd_param =list(filter(
-                lambda p: p['cvcname'] == parameter, POC_dicts
-            ))[0]['nsqdname']
-            return self.data.getLanduseMedian(landuse, nsqd_param)
-        except (IndexError, KeyError):
-            return np.nan
 
-
-# read in BMP database
 class bmpdb(_external_source):
     def __init__(self, color, marker):
         self.color = color
@@ -166,15 +181,29 @@ class bmpdb(_external_source):
     @property
     def data(self):
         if self._data is None:
-            self._data = self.datacollection.tidy.copy()
+            index_cache = self.table.data.index.names
+            self._data = (
+                self.table
+                    .data
+                    .reset_index()
+                    .query("station == 'outflow'")
+                    .query("epazone == 1")
+                    .assign(bmpparam=lambda df: df['parameter'].apply(self._get_cvc_parameter))
+                    .drop('parameter', axis=1)
+                    .rename(columns={'bmpparam': 'parameter'})
+                    .set_index(index_cache)
+            )
         return self._data
 
     @property
     def datacollection(self):
         if self._datacollection is None:
-            groups = ['category', 'units']
-            self._datacollection = self.table.to_DataCollection(othergroups=groups)
-        return self._datacollection
+            groupcols = ['units', 'category']
+            dc = wqio.DataCollection(self.data, ndval='ND', othergroups=groupcols,
+                                     paramcol='parameter')
+
+            self._datacollection = dc
+        return  self._datacollection
 
     @property
     def medians(self):
@@ -208,18 +237,6 @@ class bmpdb(_external_source):
             bmpparam = np.nan
 
         return bmpparam
-
-    def getMedians(self, bmpcategory, parameter):
-        try:
-            bmp_param = list(filter(
-                lambda p: p['cvcname'] == parameter, POC_dicts
-            ))[0]['bmpname']
-            return self.datacollection.medians.loc[
-                (bmp_param, bmpcategory),
-                ('outflow', 'stat')
-            ]
-        except (IndexError, KeyError):
-            return np.nan
 
 
 def loadExternalData(colors, markers):

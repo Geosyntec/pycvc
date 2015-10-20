@@ -673,7 +673,10 @@ class Site(object):
                 self.hydrodata
                     .storm_stats
                     .rename(columns=lambda c: c.lower().replace(' ', '_'))
+                    .assign(site=self.siteid)
                     .assign(grouped_season=lambda df: df['start_date'].apply(_grouped_seasons))
+                    .assign(year=lambda df: df['start_date'].dt.year.astype(str))
+                    .fillna(value={'Total Precip Depth': 0})
                     .rename(columns={'total_outflow_volume': 'outflow_m3'})
                     .fillna(value={'outflow_m3': 0})
                     .assign(sm_est_peak_inflow=lambda df: df.apply(fake_peak_inflow, axis=1))
@@ -735,17 +738,20 @@ class Site(object):
         hydrologic data. See: http://www.jstatsoft.org/v59/i10/paper """
 
         final_cols = [
-            'site', 'sample', 'sampletype', 'season', 'samplestart',
-            'samplestop', 'interval_minutes', 'parameter', 'units',
-            'detectionlimit', 'influent median', 'qualifier', 'concentration',
+            'site', 'sample', 'sampletype', 'season', 'grouped_season', 'year',
+            'samplestart', 'samplestop', 'interval_minutes', 'parameter', 'units',
+            'detectionlimit', 'qualifier', 'concentration',
+            'influent lower', 'influent median', 'influent upper',
             'storm_number', 'antecedent_days', 'start_date', 'end_date',
             'duration_hours', 'peak_precip_intensity_mm_per_hr',
             'total_precip_depth_mm', 'runoff_m3', 'bypass_m3', 'inflow_m3',
             'outflow_m3', 'peak_outflow_L_per_s', 'centroid_lag_hours',
-            'load_units', 'load_factor', 'load_runoff', 'load_bypass',
-            'load_inflow', 'load_outflow',
+            'load_runoff_lower', 'load_runoff', 'load_runoff_upper',
+            'load_bypass_lower', 'load_bypass', 'load_bypass_upper',
+            'load_inflow_lower', 'load_inflow', 'load_inflow_upper',
+            'load_outflow', 'load_units', 'load_factor',
         ]
-        merge_cols = ['parameter', 'season', 'units']
+
         if self._tidy_data is None:
             td = self.wqdata.copy()
             rename_cols = {
@@ -754,30 +760,41 @@ class Site(object):
                 'peak_outflow': 'peak_outflow_L_per_s'
             }
 
+            storm_merge_cols = ['site', 'storm_number', 'year', 'season', 'grouped_season']
+
             # add load and storm information
             td = (
                 td.assign(sampletype=td['sampletype'].str.lower())
                   .assign(storm_number=td['samplestart'].apply(lambda d: self._get_storm_from_date(d)[0]))
                   .assign(load_units=td['parameter'].apply(lambda p: info.getPOCInfo('cvcname', p, 'load_units')))
                   .assign(load_factor=td['parameter'].apply(lambda p: info.getPOCInfo('cvcname', p, 'load_factor')))
-                  .merge(self.storm_info, on=['storm_number', 'season'], how='right')
+                  .merge(self.storm_info, on=storm_merge_cols, how='right')
                   .rename(columns=rename_cols)
             )
 
             # join in the influent medians if they exist
+            influent_merge_cols = ['parameter', 'season', 'units']
             if self.influentmedians is not None:
-                td = td.merge(self.influentmedians, on=merge_cols, how='outer')
+                td = td.merge(self.influentmedians, on=influent_merge_cols, how='outer')
             else:
                 td['influent median'] = np.nan
+                td['influent lower'] = np.nan
+                td['influent upper'] = np.nan
 
             # compute loads
             self._tidy_data = (
-                td.assign(load_runoff=td['influent median'] * td['runoff_m3'] * td['load_factor'])
+                td.assign(load_runoff_lower=td['influent lower'] * td['runoff_m3'] * td['load_factor'])
+                  .assign(load_runoff=td['influent median'] * td['runoff_m3'] * td['load_factor'])
+                  .assign(load_runoff_upper=td['influent upper'] * td['runoff_m3'] * td['load_factor'])
+                  .assign(load_bypass_lower=td['influent lower'] * td['bypass_m3'] * td['load_factor'])
                   .assign(load_bypass=td['influent median'] * td['bypass_m3'] * td['load_factor'])
+                  .assign(load_bypass_upper=td['influent upper'] * td['bypass_m3'] * td['load_factor'])
+                  .assign(load_inflow_lower=td['influent lower'] * td['inflow_m3'] * td['load_factor'])
                   .assign(load_inflow=td['influent median'] * td['inflow_m3'] * td['load_factor'])
+                  .assign(load_inflow_upper=td['influent upper'] * td['inflow_m3'] * td['load_factor'])
                   .assign(load_outflow=td['concentration'] * td['outflow_m3'] * td['load_factor'])
                   .dropna(subset=['site'])
-            )[final_cols] #.merge(self.wqstd, how='outer', on=merge_cols)
+            )[final_cols]
 
         return self._tidy_data
 

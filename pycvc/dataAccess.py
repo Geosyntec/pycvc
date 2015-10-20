@@ -51,6 +51,25 @@ def _check_rescol(rescol):
     return rescol, unitscol
 
 
+def _check_timegroup(timegroup):
+    valid_groups = ['season', 'grouped_season', 'year']
+    if timegroup is None:
+        return timegroup
+    elif timegroup.lower() in valid_groups:
+        return timegroup.lower()
+    else:
+        raise ValueError("{} is not a valid time group ({})".format(timegroup, valid_groups))
+
+
+def _grouped_seasons(timestamp):
+    season = utils.getSeason(timestamp)
+    if season.lower() in ['spring', 'winter']:
+        return 'winter/spring'
+    elif season.lower() in ['summer', 'autumn']:
+        return 'summer/autumn'
+    else:
+        raise ValueError("{} is not a valid season".format(season))
+
 class Database(object):
     """ Class representing the CVC database, providing quick access
     to site-specific data and information.
@@ -499,6 +518,8 @@ class Site(object):
             self._wqdata = (
                 self._wqdata
                     .assign(season=self._wqdata['samplestart'].apply(utils.getSeason))
+                    .assign(grouped_season=self._wqdata['samplestart'].apply(_grouped_seasons))
+                    .assign(year=self._wqdata['samplestart'].dt.year.astype(str))
                     .assign(sampletype=self._wqdata['sampletype'].str.lower())
             )
         return self._wqdata

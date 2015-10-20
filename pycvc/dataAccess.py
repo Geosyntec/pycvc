@@ -909,17 +909,15 @@ class Site(object):
 
         return sampledates
 
-    def _wq_summary(self, rescol, seasonal=True, sampletype='composite'):
+    def _wq_summary(self, rescol='concentration', sampletype='composite', timegroup=None):
         """ Returns a dataframe of seasonal or overall water quality
         stats for the given sampletype.
         """
-        sampletype = _check_sampletype(sampletype)
         rescol, unitscol = _check_rescol(rescol)
-
-        if seasonal:
-            groupcols = ['parameter', unitscol, 'season']
-        else:
+        if timegroup is None:
             groupcols = ['parameter', unitscol]
+        else:
+            groupcols = ['parameter', unitscol, timegroup]
 
 
         summary_percentiles = [0.1, 0.25, 0.5, 0.75, 0.9]
@@ -936,22 +934,22 @@ class Site(object):
                 self.tidy_data
                     .query("sampletype == @sampletype and qualifier != '='")
                     .groupby(by=groupcols)[rescol]
-                    .apply(lambda g: g.describe(percentiles=summary_percentiles))
-                    .unstack(level=-1)
-                    .rename(columns={'count': 'count NDs'})
-                    .select(lambda c: c == 'count NDs', axis=1)
+                    .size()
+                    .to_frame()
+                    .rename(columns={0: 'count NDs'})
             )
 
-            columns = (
-                all_data.columns[:1].tolist() + nd_data.columns[:].tolist() +
-                all_data.columns[1:].tolist()
-            )
-            all_data.join(nd_data)[columns].fillna({'count NDs': 0})
+            all_data = all_data.join(nd_data).fillna({'count NDs': 0})
         else:
             all_data['count NDs'] = 0
 
         all_data['cov'] = all_data['std'] / all_data['mean']
 
+        columns = (
+            all_data.columns[:1].tolist() + nd_data.columns.tolist() +
+            all_data.columns[1:3].tolist() + all_data.columns[-1:].tolist() +
+            all_data.columns[3:-1].tolist()
+        )
         stat_labels = {
             'count': 'Count',
             'count NDs': 'Count of Non-detects',
@@ -967,87 +965,234 @@ class Site(object):
             'max': 'Maximum',
         }
 
-        if not seasonal:
-            all_data = (
-                all_data.reset_index()
-                        .assign(Season='All')
-                        .set_index(['parameter', unitscol, 'Season'])
-            )
+        return all_data[columns].rename(columns=stat_labels)
 
-        return all_data.rename(columns=stat_labels)
+    def wq_summary(self, rescol='concentration', sampletype='composite', timegroup=None):
+        """ Basical water quality Statistics
 
-    def wq_summary(self, rescol, sampletype='composite'):
-        seasonal = self._wq_summary(rescol, seasonal=True, sampletype=sampletype)
-        overall = self._wq_summary(rescol, seasonal=False, sampletype=sampletype)
-        return seasonal.append(overall).sort_index().T
+        Parameters
+        ----------
+        rescol : string (default = 'concentration')
+            The result column to summaryize. Valid values are
+            "concentration" and "load_outflow".
+        sampletype : string (default = 'composite')
+            The types of samples to be summarized. Valid values are
+            "composite" and "grab".
+        timegroup : string, optional
+            Optional string that defined how results should be group
+            temporally. Valid options are "season", "grouped_season",
+            and year. Default behavior does no temporal grouping.
 
-    def medians(self, rescol, sampletype='composite'):
-        """ Returns a DataFrame of the WQ medians for the given
-        sampletype.
+        Returns
+        -------
+        summary : pandas.DataFrame
+
         """
+
         sampletype = _check_sampletype(sampletype)
         rescol, unitscol = _check_rescol(rescol)
-        median_effluent = (
+        timecol = _check_timegroup(timegroup)
+
+        overall = self._wq_summary(rescol=rescol, sampletype=sampletype,
+                                   timegroup=None)
+        if timecol is None:
+            return overall
+        else:
+            seasonal = self._wq_summary(rescol=rescol, sampletype=sampletype,
+                                        timegroup=timegroup)
+            overall[timecol] = 'all'
+            overall = overall.reset_index().set_index(['parameter', unitscol, timecol])
+            return seasonal.append(overall).sort_index().T
+
+    def medians(self, rescol='concentration', sampletype='composite', timegroup=None):
+        """ Returns a DataFrame of the WQ medians for the given
+        sampletype.
+
+        Parameters
+        ----------
+        rescol : string (default = 'concentration')
+            The result column to summaryize. Valid values are
+            "concentration" and "load_outflow".
+        sampletype : string (default = 'composite')
+            The types of samples to be summarized. Valid values are
+            "composite" and "grab".
+        timegroup : string, optional
+            Optional string that defined how results should be group
+            temporally. Valid options are "season", "grouped_season",
+            and year. Default behavior does no temporal grouping.
+
+        Returns
+        -------
+        medians : pandas.DataFrame
+
+        """
+
+        sampletype = _check_sampletype(sampletype)
+        rescol, unitscol = _check_rescol(rescol)
+        timecol = _check_timegroup(timegroup)
+
+        if timecol is None:
+            othergroups = [unitscol]
+        else:
+            othergroups = [unitscol, timecol]
+
+        dc_options = dict(rescol=rescol, qualcol='qualifier', ndval='<',
+                          othergroups=othergroups, stationcol='site')
+        medians = (
             self.tidy_data
                 .query("sampletype == @sampletype")
-                .groupby(by=['parameter', 'season', unitscol])
-                .agg({rescol: 'median'})
-                .rename(columns={rescol: 'Median Effluent'})
+                .reset_index()
+                .pipe(wqio.DataCollection, **dc_options)
+                .medians[self.siteid]
+                .rename(columns={'stat': 'median'})
+                .rename(columns=lambda c: 'effluent {}'.format(c))
                 .reset_index()
         )
-        return median_effluent
+        return medians
 
-    def load_totals(self, sampletype='composite'):
-        """ Returns the total loads for the given sampletype.
+    def sampled_loads(self, sampletype='composite', timegroup=None, NAval=None):
+        """ Returns the total loads for sampled storms and the given
+        sampletype.
+
+        Parameters
+        ----------
+        sampletype : string (default = 'composite')
+            The types of samples to be summarized. Valid values are
+            "composite" and "grab".
+        timegroup : string, optional
+            Optional string that defined how results should be group
+            temporally. Valid options are "season", "grouped_season",
+            and year. Default behavior does no temporal grouping.
+        NAval : float, optional
+            Default value with which NA (missing) loads will be filled.
+            If none, NAs will remain inplace.
+
+        Returns
+        -------
+        sampled_loads : pandas.DataFrame
+
         """
+
         sampletype = _check_sampletype(sampletype)
+        timecol = _check_timegroup(timegroup)
+        if timecol is None:
+            groupcols = ['parameter', 'load_units']
+        else:
+            groupcols = ['parameter', timecol, 'load_units']
+
         agg_dict = {
-            'concentration': 'median',
             'units': 'first',
             'load_units': 'first',
-            #'NSQD Medians': 'first',
-            'influent median': 'first',
+            'load_runoff_lower': 'sum',
             'load_runoff': 'sum',
-            'load_bypass': 'sum',
-            'load_outflow': 'sum',
+            'load_runoff_upper': 'sum',
+            'load_inflow_lower': 'sum',
             'load_inflow': 'sum',
+            'load_inflow_upper': 'sum',
+            'load_bypass_lower': 'sum',
+            'load_bypass': 'sum',
+            'load_bypass_upper': 'sum',
+            'load_outflow': 'sum',
         }
         loads = (
             self.tidy_data
                 .query("sampletype == @sampletype")
-                .groupby(by=['parameter', 'season', 'units', 'load_units'])
+                .groupby(by=groupcols)
                 .agg(agg_dict)
         )
-        loads['load_reduc_mass'] = loads['load_inflow'] - loads['load_outflow']
-        loads['load_reduc_pct'] = loads['load_reduc_mass'] / loads['load_inflow'] * 100
+
+        if NAval is not None:
+            loads = loads.fillna(NAval)
+
+        def total_reduction(df, incol, outcol):
+            return df[incol] - df[outcol]
+
+        def pct_reduction(df, redcol, incol):
+            return df[redcol] / df[incol] * 100.0
+
+        loads = (
+           loads.assign(reduct_mass_lower=lambda df: total_reduction(df, 'load_inflow_lower', 'load_outflow'))
+                .assign(reduct_pct_lower=lambda df: total_reduction(df, 'reduct_mass_lower', 'load_inflow_lower'))
+                .assign(reduct_mass=lambda df: total_reduction(df, 'load_inflow', 'load_outflow'))
+                .assign(reduct_pct=lambda df: total_reduction(df, 'reduct_mass', 'load_inflow'))
+                .assign(reduct_mass_upper=lambda df: total_reduction(df, 'load_inflow_upper', 'load_outflow'))
+                .assign(reduct_pct_upper=lambda df: total_reduction(df, 'reduct_mass_upper', 'reduct_mass_upper'))
+        )
 
         final_cols_order = [
-            'concentration',
-            'influent median',
-            #'NSQD Medians',
+            'load_runoff_lower',
             'load_runoff',
+            'load_runoff_upper',
+            'load_bypass_lower',
             'load_bypass',
+            'load_bypass_upper',
+            'load_inflow_lower',
             'load_inflow',
+            'load_inflow_upper',
             'load_outflow',
-            'load_reduc_mass',
-            'load_reduc_pct',
+            'reduct_mass_lower',
+            'reduct_pct_lower',
+            'reduct_mass',
+            'reduct_pct',
+            'reduct_mass_upper',
+            'reduct_pct_upper',
         ]
 
         final_cols = [
-            'Median Effluent Concentration',
-            'Estimated Influent Median',
-            #'Medain from NSQD',
+            'Runoff Load (lower 95%)',
             'Runoff Load',
+            'Runoff Load (upper 95%',
+            'Bypass Load (lower 95%)',
             'Bypass Load',
+            'Bypass Load (upper 95%',
+            'Estimated Total Influent Load (lower 95%)',
             'Estimated Total Influent Load',
+            'Estimated Total Influent Load (upper 95%',
             'Total Effluent Load',
-            'Load Reduction',
-            'Load Reduction (%)',
+            'Load Reduction Mass (lower 95%)',
+            'Load Reduction Percent (lower 95%)',
+            'Load Reduction Mass',
+            'Load Reduction Percent',
+            'Load Reduction Mass (upper 95%)',
+            'Load Reduction Percent (upper 95%)',
+
         ]
 
         return loads[final_cols_order].rename(columns=dict(zip(final_cols_order, final_cols)))
 
-    def _unsampled_load_estimates(self):
+    def _unsampled_load_estimates(self,  sampletype='composite', timegroup=None, NAval=None):
+        """ Returns the loading estimates for unsampled storms.
+
+        Influent concentration values from the 95% confidence intervals
+        if the seasonal "influent" medians. Effluent concentrations are
+        also the 95% confidence intervals around the seasonal medians
+        of the actual effluent data.
+
+        Parameters
+        ----------
+        sampletype : string (default = 'composite')
+            The types of samples to be summarized. Valid values are
+            "composite" and "grab".
+        timegroup : string, optional
+            Optional string that defined how results should be group
+            temporally. Valid options are "season", "grouped_season",
+            and year. Default behavior does no temporal grouping.
+        NAval : float, optional
+            Default value with which NA (missing) loads will be filled.
+            If none, NAs will remain inplace.
+
+        Warnings
+        --------
+        This should not be taken seriously. This is a total hand-wavey,
+        smoke-n-mirrors hack. Do not make engineering decisions based on
+        this.
+
+        Returns
+        -------
+        unsampled_load_estimates : pandas.DataFrame
+
+        """
+
         rename_cols = {
             'peak_precip_intensity': 'peak_precip_intensity_mm_per_hr',
             'total_precip_depth': 'total_precip_depth_mm',
@@ -1070,24 +1215,48 @@ class Site(object):
             names=['storm_number', 'parameter']
         )
 
-        unsamled_loads = (
+        def compute_load(df, volcol, conccol, conversioncol='load_factor', NAval=None):
+            load = df['load_factor'] * df[volcol] * df[conccol]
+            if NAval is not None:
+                load = load.fillna(NAval)
+            return load
+
+        sampletyle = _check_sampletype(sampletype)
+        timecol = _check_timegroup(timegroup)
+        if timecol is not None:
+            groupcols = ['site', 'sampletype', 'parameter', 'load_units', 'has_outflow', timecol]
+        else:
+            groupcols = ['site', 'sampletype', 'parameter', 'load_units', 'has_outflow']
+
+        unsampled_loads = (
             pandas.DataFrame(index=index, columns=['_junk'])
                   .reset_index()
                   .merge(self.storm_info, on='storm_number')
                   .merge(self.influentmedians, on=['parameter', 'season'])
-                  .merge(self.medians('concentration'), on=['parameter', 'season', 'units'])
+                  .merge(self.medians('concentration', timegroup='season'), on=['parameter', 'season', 'units'])
                   .assign(site=self.siteid, sampletype='unsampled')
                   .assign(load_units=lambda df: df['parameter'].apply(lambda p: info.getPOCInfo('cvcname', p, 'load_units')))
                   .assign(load_factor=lambda df: df['parameter'].apply(lambda p: info.getPOCInfo('cvcname', p, 'load_factor')))
-                  .assign(load_runoff=lambda df: df['load_factor'] * df['runoff_m3'] * df['influent median'])
-                  .assign(load_bypass=lambda df: df['load_factor'] * df['bypass_m3'] * df['influent median'])
-                  .assign(load_inflow=lambda df: df['load_factor'] * df['inflow_m3'] * df['influent median'])
-                  .assign(load_outflow=lambda df: df['load_factor'] * df['outflow_m3'] * df['Median Effluent'])
-                  .rename(columns=rename_cols)
-                  .sort_values(by=['parameter', 'storm_number'])
-        )[final_cols]
+                  .assign(load_runoff_lower=lambda df: compute_load(df, 'runoff_m3', 'influent lower'))
+                  .assign(load_runoff=lambda df: compute_load(df, 'runoff_m3', 'influent median'))
+                  .assign(load_runoff_upper=lambda df: compute_load(df, 'runoff_m3', 'influent upper'))
+                  .assign(load_bypass_lower=lambda df: compute_load(df, 'bypass_m3', 'influent lower'))
+                  .assign(load_bypass=lambda df: compute_load(df, 'bypass_m3', 'influent median'))
+                  .assign(load_bypass_upper=lambda df: compute_load(df, 'bypass_m3', 'influent upper'))
+                  .assign(load_inflow_lower=lambda df: compute_load(df, 'inflow_m3', 'influent lower'))
+                  .assign(load_inflow=lambda df: compute_load(df, 'inflow_m3', 'influent median'))
+                  .assign(load_inflow_upper=lambda df: compute_load(df, 'inflow_m3', 'influent upper'))
+                  .assign(load_outflow_lower=lambda df: compute_load(df, 'outflow_m3', 'effluent lower'))
+                  .assign(load_outflow=lambda df: compute_load(df, 'outflow_m3', 'effluent median'))
+                  .assign(load_outflow_upper=lambda df: compute_load(df, 'outflow_m3', 'effluent upper'))
+                  .select(lambda c: ('median' in c) or ('load' in c) or (c in groupcols), axis=1)
+                  .groupby(by=groupcols)
+                  .sum()
+                  .reset_index()
+                  .sort_values(by=groupcols)
+        )
 
-        return unsamled_loads
+        return unsampled_loads
 
     def prevalence_table(self, sampletype='composite'):
         """ Returns a sample prevalence table for the given sample type.
@@ -1179,6 +1348,7 @@ class Site(object):
             'total_precip_depth',
             'outflow_mm',
             'season',
+            'Seasons',
             'year',
             'Has outflow?'
         ]
@@ -1193,7 +1363,7 @@ class Site(object):
         sinfo = (
             self.storm_info
                 .assign(year=self.storm_info['start_date'].dt.year)
-                .rename(columns={'has_outflow': 'Has outflow?'})
+                .rename(columns={'has_outflow': 'Has outflow?', 'grouped_season': 'Seasons'})
                 .select(lambda c: c in cols, axis=1)
                 .rename(columns=lambda c: c.replace('_', ' '))
         )
@@ -1223,6 +1393,16 @@ class Site(object):
                 palette=palette or 'deep',
                 markers=['o', 's'],
                 hue_order=['Yes', 'No'],
+                vars=var_cols
+            )
+
+        elif by == 'grouped_season':
+            pg = seaborn.pairplot(
+                sinfo,
+                palette=palette or 'BrBG_r',
+                hue='Seasons',
+                markers=['o', '^'],
+                hue_order=['winter/spring', 'summer/autumn'],
                 vars=var_cols
             )
 

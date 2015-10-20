@@ -389,7 +389,7 @@ class Site(object):
         self.compperiods = compperiods
         self.minflow = minflow
         self.minprecip = minprecip
-        self.influentmedians = influentmedians
+        self._influentmedians = influentmedians
         self.isreference = isreference
         self.onlyPOCs = onlyPOCs
         self.runoff_fxn = (lambda x: np.nan) if runoff_fxn is None else runoff_fxn
@@ -425,6 +425,14 @@ class Site(object):
         self._sample_info = None
         self._all_samples = None
         self._samples = None
+
+    @property
+    def influentmedians(self):
+        return self._influentmedians
+    @influentmedians.setter
+    def influentmedians(self, value):
+        self._influentmedians = value
+
 
     @property
     def runoff_fxn(self):

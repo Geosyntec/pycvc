@@ -413,6 +413,24 @@ class Storm(wqio.Storm):
     def lag(self):
         return self.centroid_lag_hours
 
+    @property
+    def total_inflow_volume(self):
+        if self._total_inflow_volume is None and self.has_inflow:
+            self._total_inflow_volume = self.data[self.inflowcol].sum() * self.volume_conversion
+        return self._total_inflow_volume
+    @total_inflow_volume.setter
+    def total_inflow_volume(self, value):
+        self._total_inflow_volume = value
+
+    @property
+    def total_outflow_volume(self):
+        if self._total_outflow_volume is None and self.has_outflow:
+            self._total_outflow_volume = self.data[self.outflowcol].sum() * self.volume_conversion
+        return self._total_outflow_volume
+    @total_outflow_volume.setter
+    def total_outflow_volume(self, value):
+        self._total_outflow_volume = value
+
     @np.deprecate
     def _general_table(self, name):
         """ Creates a simple string of a table of the basic storm info

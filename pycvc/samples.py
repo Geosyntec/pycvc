@@ -181,9 +181,8 @@ class _WQSample_Mixin(wqio.core.samples._basic_wq_sample):
     def _make_ISR_tables(self):
         """ Creates tables (CSV and LaTeX) for the ISR reports. There are three
         tables currently included in ISRs:
-            1) The general info table
-            2) The hydrologic info table
-            3) Water quality summary (composite data only)
+            1) The hydrologic info table
+            2) Water quality summary (composite data only)
 
         Parameters
         ----------
@@ -200,17 +199,12 @@ class _WQSample_Mixin(wqio.core.samples._basic_wq_sample):
 
         """
 
-        ## get the string for Table 1
-        # general = self.storm._general_table(self.tocentry)
-        # self._write_basic_table(general, self.general_tex_table)
-
         # get and write the string for Table 2
         hydro = self.storm._hydro_table(self.tocentry)
         self._write_basic_table(hydro, self.hydro_tex_table)
 
         # make the WQ summary tables
         wq = self.wq_table()
-        #return general, hydro, wq
         return hydro, wq
 
     def _make_ISR_document(self, version='draft'):
@@ -467,8 +461,8 @@ class Storm(wqio.Storm):
             "Peak Effluent Flow,{peak_outflow:.1f} L/s\n"
             "Peak Precipitation Intensity,{peak_precip_intensity:.0f} mm/hr\n"
             "Lag Time,{centroid_lag_hours:.1f} hr\n"
-            "Estimated Total Influent Volume,{inflow_m3:.0f} L\n"
-            "Total Effluent Volume,{outflow_m3:.0f} L\n"
+            "Estimated Total Influent Volume,{inflow_m3:.0f} m$^3$\n"
+            "Total Effluent Volume,{outflow_m3:.0f} m$^3$\n"
             "Total Precipitation,{total_precip_depth:.1f} mm\n"
         ).format(**storm_values)
 

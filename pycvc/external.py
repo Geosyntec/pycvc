@@ -208,24 +208,15 @@ class bmpdb(_external_source):
     @property
     def medians(self):
         if self._medians is None:
-
-            medians = (
-                self.data
-                    .groupby(by=['station', 'parameter', 'units', 'category'])['res']
-                    .median()
-                    .xs('outflow', level='station')
-                    .unstack(level='category')
-                    .reset_index()
-                    .rename(columns={'parameter': '_p'})
-            )
-            medians['parameter'] = medians['_p'].apply(self._get_cvc_parameter)
-
             self._medians = (
-                medians.dropna(subset=['parameter'])
-                       .drop('_p', axis=1)
+                self.datacollection
+                    .medians['outflow']
+                    .reset_index()
+                    .pipe(np.round, 3)
+                    .rename(columns={'stat': 'BMPDB Medians'})
             )
-
         return self._medians
+
 
     @staticmethod
     def _get_cvc_parameter(bmpparam):

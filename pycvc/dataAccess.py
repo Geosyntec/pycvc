@@ -699,7 +699,7 @@ class Site(object):
 
         return self._storm_info
 
-    def storm_stats(self, timegroup=None):
+    def storm_stats(self, timegroup=None, **winsor_params):
         """ Statistics summarizing all the storm events
 
         Parameters
@@ -708,10 +708,19 @@ class Site(object):
             Optional string that defined how results should be group
             temporally. Valid options are "season", "grouped_season",
             and year. Default behavior does no temporal grouping.
+        **winsor_params : optional keyword arguments
+            Dictionary of column names (from `Site.storm_info`) and
+            percetiles at which those columns should be winsorized.
 
         Returns
         -------
         summary : pandas.DataFrame
+
+        See also
+        --------
+        pycvc.Site.storm_info
+        wqio.units.winsorize_dataframe
+        scipy.stats.mstats.winsorize
 
         """
 
@@ -721,7 +730,8 @@ class Site(object):
         else:
             groups = ['site', timecol]
 
-        descr = self.storm_info.groupby(by=groups).describe()
+        data = utils.winsorize_dataframe(self.storm_info, **winsor_params)
+        descr = data.groupby(by=groups).describe()
         descr.index.names = groups + ['stat']
         descr = descr.select(lambda c: c != 'storm_number', axis=1)
         descr.columns.names = ['quantity']

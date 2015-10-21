@@ -211,8 +211,8 @@ class bmpdb(_external_source):
             self._medians = (
                 self.datacollection
                     .medians['outflow']
-                    .reset_index()
                     .pipe(np.round, 3)
+                    .reset_index()
                     .rename(columns={'stat': 'BMPDB Medians'})
             )
         return self._medians

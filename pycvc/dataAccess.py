@@ -19,13 +19,12 @@ from . import viz
 # CVC-specific wqio.events subclasses
 from .samples import GrabSample, CompositeSample, Storm
 
+
+__all__ = ['Database', 'Site']
+
+
 LITERS_PER_CUBICMETER = 1000.
 MILLIMETERS_PER_METER = 1000.
-
-__all__ = [
-    'Database'
-    'Site',
-]
 
 
 def _check_sampletype(sampletype):
@@ -42,13 +41,13 @@ def _check_rescol(rescol):
     """ Comfirms that a give value is a valid results column and returns
     the corresponding units column and results column.
     """
-    if rescol == 'concentration':
+    if rescol.lower() == 'concentration':
         unitscol = 'units'
-    elif rescol == 'load_outflow':
+    elif rescol.lower() == 'load_outflow':
         unitscol = 'load_units'
     else:
-        raise ValueError("`rescol` must be in ['concentration', 'load']")
-    return rescol, unitscol
+        raise ValueError("`rescol` must be in ['concentration', 'load_outflow']")
+    return rescol.lower(), unitscol
 
 
 def _check_timegroup(timegroup):
@@ -69,6 +68,25 @@ def _grouped_seasons(timestamp):
         return 'summer/autumn'
     else:
         raise ValueError("{} is not a valid season".format(season))
+
+
+def _remove_storms_from_df(df, dates, datecol):
+    # determine which storm numbers should be excluded
+    excluded_storms = []
+    if dates is not None:
+        # stuff in a list if necessary
+        if np.isscalar(dates):
+            dates = [dates]
+
+        # loop through all of the excluded dates
+        for d in dates:
+            # # convert to a proper python date object
+            excl_date = wqio.utils.santizeTimestamp(d).date()
+            storm_rows = df.loc[df[datecol].dt.date == excl_date]
+            excluded_storms.extend(storm_rows['storm_number'].values)
+
+    return df.query("storm_number not in @excluded_storms")
+
 
 class Database(object):
     """ Class representing the CVC database, providing quick access
@@ -699,11 +717,18 @@ class Site(object):
 
         return self._storm_info
 
-    def storm_stats(self, timegroup=None, **winsor_params):
+    def storm_stats(self, minprecip=0, excluded_dates=None, timegroup=None, **winsor_params):
         """ Statistics summarizing all the storm events
 
         Parameters
         ----------
+        minprecip : float (default = 0)
+            The minimum amount of precipitation required to for a storm
+            to be included. Using 0 (the default) will likely include
+            some pure snowmelt events.
+        excluded_dates : list of date-likes, optional
+            This is a list of storm start dates that will be removed
+            from the storms dataframe prior to computing statistics.
         timegroup : string, optional
             Optional string that defined how results should be group
             temporally. Valid options are "season", "grouped_season",
@@ -730,7 +755,13 @@ class Site(object):
         else:
             groups = ['site', timecol]
 
-        data = utils.winsorize_dataframe(self.storm_info, **winsor_params)
+        data = (
+            self.storm_info
+                .pipe(utils.winsorize_dataframe, **winsor_params)
+                .pipe(_remove_storms_from_df, excluded_dates, 'start_date')
+                .query("total_precip_depth > @minprecip")
+        )
+
         descr = data.groupby(by=groups).describe()
         descr.index.names = groups + ['stat']
         descr = descr.select(lambda c: c != 'storm_number', axis=1)
@@ -919,7 +950,7 @@ class Site(object):
 
         return sampledates
 
-    def _wq_summary(self, rescol='concentration', sampletype='composite', timegroup=None):
+    def _wq_summary(self, rescol='concentration', sampletype='composite', excluded_dates=None, timegroup=None):
         """ Returns a dataframe of seasonal or overall water quality
         stats for the given sampletype.
         """
@@ -929,11 +960,11 @@ class Site(object):
         else:
             groupcols = ['parameter', unitscol, timegroup]
 
+        data = _remove_storms_from_df(self.tidy_data, excluded_dates, "start_date")
 
         summary_percentiles = [0.1, 0.25, 0.5, 0.75, 0.9]
         all_data = (
-            self.tidy_data
-                .query("sampletype == @sampletype")
+            data.query("sampletype == @sampletype")
                 .groupby(by=groupcols)[rescol]
                 .apply(lambda g: g.describe(percentiles=summary_percentiles))
                 .unstack(level=-1)
@@ -941,8 +972,7 @@ class Site(object):
 
         if self.tidy_data.query("sampletype == @sampletype and qualifier != '='").shape[0] > 0:
             nd_data = (
-                self.tidy_data
-                    .query("sampletype == @sampletype and qualifier != '='")
+                data.query("sampletype == @sampletype and qualifier != '='")
                     .groupby(by=groupcols)[rescol]
                     .size()
                     .to_frame()
@@ -977,7 +1007,7 @@ class Site(object):
 
         return all_data[columns].rename(columns=stat_labels)
 
-    def wq_summary(self, rescol='concentration', sampletype='composite', timegroup=None):
+    def wq_summary(self, rescol='concentration', sampletype='composite', excluded_dates=None, timegroup=None):
         """ Basical water quality Statistics
 
         Parameters
@@ -988,6 +1018,9 @@ class Site(object):
         sampletype : string (default = 'composite')
             The types of samples to be summarized. Valid values are
             "composite" and "grab".
+        excluded_dates : list of date-likes, optional
+            This is a list of storm start dates that will be removed
+            from the storms dataframe prior to computing statistics.
         timegroup : string, optional
             Optional string that defined how results should be group
             temporally. Valid options are "season", "grouped_season",
@@ -1004,12 +1037,12 @@ class Site(object):
         timecol = _check_timegroup(timegroup)
 
         overall = self._wq_summary(rescol=rescol, sampletype=sampletype,
-                                   timegroup=None)
+                                   excluded_dates=excluded_dates, timegroup=None)
         if timecol is None:
             return overall
         else:
             seasonal = self._wq_summary(rescol=rescol, sampletype=sampletype,
-                                        timegroup=timegroup)
+                                        excluded_dates=excluded_dates, timegroup=timegroup)
             overall[timecol] = 'all'
             overall = overall.reset_index().set_index(['parameter', unitscol, timecol])
             return seasonal.append(overall).sort_index().T
@@ -1060,7 +1093,7 @@ class Site(object):
         )
         return medians
 
-    def sampled_loads(self, sampletype='composite', timegroup=None, NAval=None):
+    def sampled_loads(self, sampletype='composite', excluded_dates=None, timegroup=None, NAval=None):
         """ Returns the total loads for sampled storms and the given
         sampletype.
 
@@ -1073,6 +1106,9 @@ class Site(object):
             Optional string that defined how results should be group
             temporally. Valid options are "season", "grouped_season",
             and year. Default behavior does no temporal grouping.
+        excluded_dates : list of date-likes, optional
+            This is a list of storm start dates that will be removed
+            from the storms dataframe prior to computing statistics.
         NAval : float, optional
             Default value with which NA (missing) loads will be filled.
             If none, NAs will remain inplace.
@@ -1107,6 +1143,7 @@ class Site(object):
         loads = (
             self.tidy_data
                 .query("sampletype == @sampletype")
+                .pipe(_remove_storms_from_df, excluded_dates, "start_date")
                 .groupby(by=groupcols)
                 .agg(agg_dict)
         )
@@ -1170,7 +1207,7 @@ class Site(object):
 
         return loads[final_cols_order].rename(columns=dict(zip(final_cols_order, final_cols)))
 
-    def _unsampled_load_estimates(self,  sampletype='composite', timegroup=None, NAval=None):
+    def _unsampled_load_estimates(self,  sampletype='composite', excluded_dates=None, timegroup=None, NAval=None):
         """ Returns the loading estimates for unsampled storms.
 
         Influent concentration values from the 95% confidence intervals
@@ -1187,6 +1224,9 @@ class Site(object):
             Optional string that defined how results should be group
             temporally. Valid options are "season", "grouped_season",
             and year. Default behavior does no temporal grouping.
+        excluded_dates : list of date-likes, optional
+            This is a list of storm start dates that will be removed
+            from the storms dataframe prior to computing statistics.
         NAval : float, optional
             Default value with which NA (missing) loads will be filled.
             If none, NAs will remain inplace.
@@ -1244,6 +1284,7 @@ class Site(object):
                   .merge(self.storm_info, on='storm_number')
                   .merge(self.influentmedians, on=['parameter', 'season'])
                   .merge(self.medians('concentration', timegroup='season'), on=['parameter', 'season', 'units'])
+                  .pipe(_remove_storms_from_df, excluded_dates, "start_date")
                   .assign(site=self.siteid, sampletype='unsampled')
                   .assign(load_units=lambda df: df['parameter'].apply(lambda p: info.getPOCInfo('cvcname', p, 'load_units')))
                   .assign(load_factor=lambda df: df['parameter'].apply(lambda p: info.getPOCInfo('cvcname', p, 'load_factor')))

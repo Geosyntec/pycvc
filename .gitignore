@@ -9,6 +9,7 @@
 *.pyc
 pycvc.egg-info/*
 __pycache__
+result_images
 
 # Packages #
 ############

@@ -16,11 +16,6 @@ import wqio
 from pycvc import samples, info
 
 from wqio.tests.core_tests import samples_tests, hydro_tests
-from wqio.tests.utils_tests import misc_tests
-
-
-class test_LaTeXDirectory(misc_tests.test_LaTeXDirectory):
-    pass
 
 
 class _wq_sample_mixin(object):

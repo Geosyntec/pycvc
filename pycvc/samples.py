@@ -13,10 +13,6 @@ import wqio
 from wqio import utils
 
 
-class LaTeXDirectory(utils.LaTeXDirectory):
-    pass
-
-
 class _WQSample_Mixin(wqio.core.samples._basic_wq_sample):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -352,7 +348,7 @@ class _WQSample_Mixin(wqio.core.samples._basic_wq_sample):
         texdir, texdoc = os.path.split(texpath)
 
         if wqio.testing.checkdep_tex() is not None:
-            with LaTeXDirectory(texdir) as latex:
+            with utils.LaTeXDirectory(texdir) as latex:
                 tex = latex.compile(texdoc)
 
         else:

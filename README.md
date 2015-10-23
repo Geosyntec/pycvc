@@ -170,10 +170,10 @@ $ conda update --all
 
 
 ## Using `pycvc`
-With `pycvc` and all of its dependencies installed, they best way to get started is by downloading and using the [notebook](https://github.com/Geosyntec/pycvc/blob/master/examples/Data%20Summaries.ipynb]) in this repository.
+With `pycvc` and all of its dependencies installed, the best way to get started is by downloading and using the [notebook](https://github.com/Geosyntec/pycvc/blob/master/examples/Data%20Summaries.ipynb]) in this repository.
 
 ### Getting CVC Analysis Notebooks (and Source Code)
-To do so, you can either use git to clone the entire repository and source code with the cmd:
+To do so, you can either use git to clone the entire repository and source code with the command:
 ```
 git clone https://github.com/Geosyntec/pycvc.git
 ```
@@ -201,12 +201,12 @@ $ ipython notebook
 [I 09:04:51.902 NotebookApp] Use Control-C to stop this server and shut down all kernels (twice to skip confirmation).
 ```
 At that point, your default web browser (preferably not Internet Explorer) will pop up.
-If that browswer happens to be internet explorer, it is recommended to copy the notebook server's URL into a modern browser like Chrome or Firefox.
+If that browswer happens to be Internet Explorer, it is recommended to copy the notebook server's URL into a modern browser like Chrome or Firefox.
 Then, click the notebook in the list of files and a new browser tab will open with the analysis ready to go.
 
 For more information about Jupyter, check out the [official documentation](http://jupyter.readthedocs.org/en/latest/)
 
-### Configuring the Analysis to use your local database
+### Configuring the analysis to use your local database
 The seventh code cell in the notebook titled **Load CVC Database** must be configured to point to your local copy of the CVC database. By default, the code cell is configured as follows:
 ```
 cvcdbfile = "C:/users/phobson/Desktop/cvc.accdb"

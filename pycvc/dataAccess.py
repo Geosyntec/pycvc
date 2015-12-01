@@ -469,7 +469,6 @@ class Site(object):
     def influentmedians(self, value):
         self._influentmedians = value
 
-
     @property
     def runoff_fxn(self):
         return self._runoff_fxn
@@ -710,7 +709,8 @@ class Site(object):
                 'antecedent_days', 'start_date', 'end_date', 'duration_hours',
                 'peak_precip_intensity', 'total_precip_depth',
                 'runoff_m3', 'bypass_m3', 'inflow_m3', 'outflow_m3', 'outflow_mm',
-                'peak_outflow', 'centroid_lag_hours', 'has_outflow', 'sm_est_peak_inflow'
+                'peak_outflow', 'centroid_lag_hours', 'peak_lag_hours',
+                'has_outflow', 'sm_est_peak_inflow'
             ]
 
             self._storm_info = stormstats[col_order]
@@ -784,9 +784,9 @@ class Site(object):
             'detectionlimit', 'qualifier', 'concentration',
             'influent lower', 'influent median', 'influent upper',
             'storm_number', 'antecedent_days', 'start_date', 'end_date',
-            'duration_hours', 'peak_precip_intensity_mm_per_hr',
-            'total_precip_depth_mm', 'runoff_m3', 'bypass_m3', 'inflow_m3',
-            'outflow_m3', 'peak_outflow_L_per_s', 'centroid_lag_hours',
+            'duration_hours', 'peak_precip_intensity_mm_per_hr', 'total_precip_depth_mm',
+            'runoff_m3', 'bypass_m3', 'inflow_m3', 'outflow_m3',
+            'peak_outflow_L_per_s', 'centroid_lag_hours', 'peak_lag_hours',
             'load_runoff_lower', 'load_runoff', 'load_runoff_upper',
             'load_bypass_lower', 'load_bypass', 'load_bypass_upper',
             'load_inflow_lower', 'load_inflow', 'load_inflow_upper',
@@ -1256,8 +1256,9 @@ class Site(object):
             'influent_median', 'effluent_median', 'storm_number', 'antecedent_days',
             'start_date', 'end_date', 'duration_hours', 'peak_precip_intensity_mm_per_hr',
             'total_precip_depth_mm', 'runoff_m3', 'bypass_m3', 'inflow_m3', 'outflow_m3',
-            'peak_outflow_L_per_s', 'centroid_lag_hours', 'load_units', 'load_factor',
-            'load_runoff', 'load_bypass', 'load_inflow', 'load_outflow'
+            'peak_outflow_L_per_s', 'centroid_lag_hours', 'peak_lag_hours',
+            'load_units', 'load_factor', 'load_runoff', 'load_bypass',
+            'load_inflow', 'load_outflow'
           ]
 
         index = pandas.MultiIndex.from_product(
@@ -1273,10 +1274,9 @@ class Site(object):
 
         sampletyle = _check_sampletype(sampletype)
         timecol = _check_timegroup(timegroup)
+        groupcols = ['site', 'sampletype', 'parameter', 'load_units', 'has_outflow']
         if timecol is not None:
-            groupcols = ['site', 'sampletype', 'parameter', 'load_units', 'has_outflow', timecol]
-        else:
-            groupcols = ['site', 'sampletype', 'parameter', 'load_units', 'has_outflow']
+            groupcols.append(timecol)
 
         unsampled_loads = (
             pandas.DataFrame(index=index, columns=['_junk'])

@@ -353,7 +353,7 @@ class test_Storm(hydro_tests.test_Storm):
             "Event Duration,5.8 hr\n"
             "Peak Effluent Flow,41.0 L/s\n"
             "Peak Precipitation Intensity,1 mm/hr\n"
-            "Lag Time,1.3 hr\n"
+            "Lag Time,0.8 hr\n"
             "Estimated Total Influent Volume,876600 m$^3$\n"
             "Total Effluent Volume,291900 m$^3$\n"
             "Total Precipitation,1.4 mm\n"

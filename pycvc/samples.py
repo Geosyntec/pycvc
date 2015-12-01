@@ -407,7 +407,10 @@ class Storm(wqio.Storm):
 
     @property
     def lag(self):
-        return self.centroid_lag_hours
+        """ set this to either the centroid or peak lag, per your
+        preference.
+        """
+        return self.peak_lag_hours
 
     @property
     def total_inflow_volume(self):
@@ -455,16 +458,17 @@ class Storm(wqio.Storm):
 
         """
 
-        if pandas.isnull(self.centroid_lag_hours):
+        if pandas.isnull(self.lag):
             lagstring = '--'
         else:
-            lagstring = '{:.1f}'.format(self.centroid_lag_hours * 60.)
+            lagstring = '{:.1f}'.format(self.lag)
 
         storm_values = self.info.copy()
         storm_values.update({
             'site': name,
             'eventdate': self.start.strftime('%Y-%m-%d %H:%M'),
-            'drydays': self.antecedent_period_days
+            'drydays': self.antecedent_period_days,
+            'lag': lagstring,
         })
 
         table = (
@@ -474,7 +478,7 @@ class Storm(wqio.Storm):
             "Event Duration,{duration_hours:.1f} hr\n"
             "Peak Effluent Flow,{peak_outflow:.1f} L/s\n"
             "Peak Precipitation Intensity,{peak_precip_intensity:.0f} mm/hr\n"
-            "Lag Time,{centroid_lag_hours:.1f} hr\n"
+            "Lag Time,{lag:s} hr\n"
             "Estimated Total Influent Volume,{inflow_m3:.0f} m$^3$\n"
             "Total Effluent Volume,{outflow_m3:.0f} m$^3$\n"
             "Total Precipitation,{total_precip_depth:.1f} mm\n"

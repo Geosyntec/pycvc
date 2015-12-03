@@ -223,13 +223,8 @@ To set that up, first clone the repository as discussed above, and then use `pip
 git clone https://github.com/Geosyntec/pycvc.git
 cd pycvc
 activate cvc
-pip install .  # the "." means the current directory
+pip install -e .  # "-e" = editable, "." = the current directory
 ```
 
-The above procedure copies and compiles deep inside your python's installation folders.
-Alternatively, if you want to modify the source code and conveniently test out the changes you've made, add and `-e` (for editable) flag to the install command:
-```
-pip install -e .
-```
-When you do that, python simply creates a link in its installation directory to your clone repository.
-So any modification you make to the source code will be reflected every time you restart your python interpreter (the jupyer notebook, most likely).
+Using the `-e` (for editable) flag in the install command as shown above tells python to continuously look for source code updates.
+This means that any modification you make to the source code will be reflected every time you restart your python interpreter (the jupyer notebook, most likely).

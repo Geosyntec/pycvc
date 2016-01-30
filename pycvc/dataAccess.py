@@ -1464,6 +1464,39 @@ class Site(object):
         figname = '{}-HydroPairPlot_by_{}'.format(self.siteid, by)
         viz._savefig(pg.fig, figname, extra='HydroPairPlot')
 
+    def hydro_histogram(self, valuecol='total_precip_depth', bins=None,
+                        **factoropts):
+        """ Plot a faceted, categorical histogram of storms.
+
+        valuecol : str, optional
+            The name of the column that should be categorized and plotted.
+        bins : array-like, optional
+            The right-edges of the histogram bins.
+        factoropts : keyword arguments, optional
+            Options passed directly to seaborn.factorplot
+
+        Returns
+        -------
+        fig : seaborn.FacetGrid
+
+        See also
+        --------
+        utils.figutils.categorical_histogram
+        seaborn.factorplot
+
+        """
+
+        if bins is None:
+            bins = np.arange(5, 30, 5)
+
+        fig = utils.figutils.categorical_histogram(
+            self.storm_info, valuecol, bins, **factoropts
+        )
+
+        return fig
+
+
+
     def allISRs(self, sampletype, version='draft'):
         """ Compiles all Individual Storm Reports for a site
 

@@ -1108,7 +1108,7 @@ class WQMegaFigure(object):
         leg = self._proxy_legend(all_axes[1][-1], externaldata=externaldata,
                                  seasonal=seasonal, load=load)
 
-        fig.tight_layout()
+        #fig.tight_layout()
         fig.subplots_adjust(hspace=0.12, top=0.96, wspace=0.04)
 
         figname = utils.processFilename('%s-megafig-%s-%s-%02d' %

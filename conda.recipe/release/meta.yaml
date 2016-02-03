@@ -1,0 +1,53 @@
+package:
+  name: pycvc
+  version: !!str 0.2.2
+
+source:
+  git_url: https://github.com/Geosyntec/pycvc.git
+  git_tag: v0.2.2
+#  patches:
+   # List any patch files here
+   # - fix.patch
+
+build:
+  number: 1
+
+requirements:
+  build:
+    - python
+    - setuptools
+    - wqio
+    - pybmpdb
+    - pynsqd
+    - pyodbc
+    - openpyxl
+    - xlrd
+
+  run:
+    - python
+    - wqio
+    - pybmpdb
+    - pynsqd
+    - pyodbc
+    - six
+    - openpyxl
+    - xlrd
+
+test:
+  imports:
+    - pycvc
+
+  #commands:
+  #  - python -c "import pycvc; pycvc.test()"
+
+  requires:
+    - nose
+
+about:
+  home: https://github.com/Geosyntec/pycvc.git
+  license:  BSD License
+  summary: 'Connector for the Credit Valley Convservation Authority to wqio'
+
+# See
+# http://docs.continuum.io/conda/build.html for
+# more information about meta.yaml/configure

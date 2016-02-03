@@ -1159,11 +1159,11 @@ class Site(object):
 
         loads = (
            loads.assign(reduct_mass_lower=lambda df: total_reduction(df, 'load_inflow_lower', 'load_outflow'))
-                .assign(reduct_pct_lower=lambda df: total_reduction(df, 'reduct_mass_lower', 'load_inflow_lower'))
+                .assign(reduct_pct_lower=lambda df: pct_reduction(df, 'reduct_mass_lower', 'load_inflow_lower'))
                 .assign(reduct_mass=lambda df: total_reduction(df, 'load_inflow', 'load_outflow'))
-                .assign(reduct_pct=lambda df: total_reduction(df, 'reduct_mass', 'load_inflow'))
+                .assign(reduct_pct=lambda df: pct_reduction(df, 'reduct_mass', 'load_inflow'))
                 .assign(reduct_mass_upper=lambda df: total_reduction(df, 'load_inflow_upper', 'load_outflow'))
-                .assign(reduct_pct_upper=lambda df: total_reduction(df, 'reduct_mass_upper', 'reduct_mass_upper'))
+                .assign(reduct_pct_upper=lambda df: pct_reduction(df, 'reduct_mass_upper', 'load_inflow_upper'))
         )
 
         final_cols_order = [

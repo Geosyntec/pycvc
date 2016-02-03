@@ -1159,11 +1159,11 @@ class Site(object):
 
         loads = (
            loads.assign(reduct_mass_lower=lambda df: total_reduction(df, 'load_inflow_lower', 'load_outflow'))
-                .assign(reduct_pct_lower=lambda df: total_reduction(df, 'reduct_mass_lower', 'load_inflow_lower'))
+                .assign(reduct_pct_lower=lambda df: pct_reduction(df, 'reduct_mass_lower', 'load_inflow_lower'))
                 .assign(reduct_mass=lambda df: total_reduction(df, 'load_inflow', 'load_outflow'))
-                .assign(reduct_pct=lambda df: total_reduction(df, 'reduct_mass', 'load_inflow'))
+                .assign(reduct_pct=lambda df: pct_reduction(df, 'reduct_mass', 'load_inflow'))
                 .assign(reduct_mass_upper=lambda df: total_reduction(df, 'load_inflow_upper', 'load_outflow'))
-                .assign(reduct_pct_upper=lambda df: total_reduction(df, 'reduct_mass_upper', 'reduct_mass_upper'))
+                .assign(reduct_pct_upper=lambda df: pct_reduction(df, 'reduct_mass_upper', 'load_inflow_upper'))
         )
 
         final_cols_order = [
@@ -1463,6 +1463,39 @@ class Site(object):
 
         figname = '{}-HydroPairPlot_by_{}'.format(self.siteid, by)
         viz._savefig(pg.fig, figname, extra='HydroPairPlot')
+
+    def hydro_histogram(self, valuecol='total_precip_depth', bins=None,
+                        **factoropts):
+        """ Plot a faceted, categorical histogram of storms.
+
+        valuecol : str, optional
+            The name of the column that should be categorized and plotted.
+        bins : array-like, optional
+            The right-edges of the histogram bins.
+        factoropts : keyword arguments, optional
+            Options passed directly to seaborn.factorplot
+
+        Returns
+        -------
+        fig : seaborn.FacetGrid
+
+        See also
+        --------
+        utils.figutils.categorical_histogram
+        seaborn.factorplot
+
+        """
+
+        if bins is None:
+            bins = np.arange(5, 30, 5)
+
+        fig = utils.figutils.categorical_histogram(
+            self.storm_info, valuecol, bins, **factoropts
+        )
+
+        return fig
+
+
 
     def allISRs(self, sampletype, version='draft'):
         """ Compiles all Individual Storm Reports for a site

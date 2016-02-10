@@ -464,6 +464,8 @@ class Site(object):
         self._storms = None
         self._storm_info = None
         self._tidy_data = None
+        self._tidy_wq = None
+        self._tidy_hydro = None
         self._sample_info = None
         self._all_samples = None
         self._samples = None
@@ -843,6 +845,81 @@ class Site(object):
             )[final_cols]
 
         return self._tidy_data
+
+    @property
+    def tidy_wq(self):
+
+        def compute_load(row, volcol, conccol, backupcol=None, conversioncol='load_factor', NAval=None):
+            if pandas.isnull(row[conccol]) and backupcol is not None:
+                conccol = backupcol
+
+            load = row[conversioncol] * row[volcol] * row[conccol]
+            if NAval is not None and np.isnan(load):
+                load = NAval
+
+            return load
+
+        if self._tidy_wq is None:
+            wq = (
+                self.wqdata
+                   .query("sampletype == 'composite'")
+                   .assign(storm_number=lambda df: df['samplestart'].apply(lambda d: self._get_storm_from_date(d)[0]))
+            )
+
+            index = pandas.MultiIndex.from_product(
+                [self.storm_info['storm_number'], self.wqdata['parameter'].unique()],
+                names=['storm_number', 'parameter']
+            )
+
+            final_cols = [
+                'site', 'year', 'season', 'grouped_season', 'storm_number',
+                'antecedent_days', 'start_date', 'end_date', 'duration_hours',
+                'peak_precip_intensity', 'total_precip_depth', 'runoff_m3',
+                'bypass_m3', 'inflow_m3', 'outflow_m3', 'outflow_mm',
+                'peak_outflow', 'centroid_lag_hours', 'peak_lag_hours',
+                'has_outflow', 'sm_est_peak_inflow', 'parameter', 'units',
+                'sample', 'sampletype', 'samplestart', 'samplestop', 'interval_minutes',
+                'detectionlimit', 'qualifier', 'concentration',
+                'influent lower', 'influent median', 'influent upper',
+                'effluent lower', 'effluent median', 'effluent upper',
+                'load_units', 'load_factor',
+                'load_runoff_lower', 'load_runoff', 'load_runoff_upper',
+                'load_bypass_lower', 'load_bypass', 'load_bypass_upper',
+                'load_inflow_lower', 'load_inflow', 'load_inflow_upper',
+                'load_outflow_lower', 'load_outflow', 'load_outflow_upper',
+            ]
+
+            self._tidy_wq = (
+                pandas.DataFrame(index=index, columns=['_junk'])
+                      .reset_index()
+                      .drop('_junk', axis=1)
+                      .assign(units=lambda df: df['parameter'].apply(lambda x: info.getPOCInfo('cvcname', x, 'conc_units')['plain']))
+                      .merge(self.storm_info, on='storm_number', how='outer')
+                      .merge(self.influentmedians, on=['parameter', 'season', 'units'], how='outer')
+                      .merge(self.medians('concentration', timegroup='season'), on=['parameter', 'season', 'units'], how='outer')
+                      .merge(wq, on=['parameter', 'storm_number', 'site', 'year', 'season', 'grouped_season', 'units'], how='outer')
+                      .assign(load_units=lambda df: df['parameter'].apply(lambda p: info.getPOCInfo('cvcname', p, 'load_units')))
+                      .assign(load_factor=lambda df: df['parameter'].apply(lambda p: info.getPOCInfo('cvcname', p, 'load_factor')))
+                      .assign(load_runoff_lower=lambda df: df.apply(lambda row: compute_load(row, 'runoff_m3', 'influent lower'), axis=1))
+                      .assign(load_runoff=lambda df: df.apply(lambda row: compute_load(row, 'runoff_m3', 'influent median'), axis=1))
+                      .assign(load_runoff_upper=lambda df: df.apply(lambda row: compute_load(row, 'runoff_m3', 'influent upper'), axis=1))
+                      .assign(load_bypass_lower=lambda df: df.apply(lambda row: compute_load(row, 'bypass_m3', 'influent lower'), axis=1))
+                      .assign(load_bypass=lambda df: df.apply(lambda row: compute_load(row, 'bypass_m3', 'influent median'), axis=1))
+                      .assign(load_bypass_upper=lambda df: df.apply(lambda row: compute_load(row, 'bypass_m3', 'influent upper'), axis=1))
+                      .assign(load_inflow_lower=lambda df: df.apply(lambda row: compute_load(row, 'inflow_m3', 'influent lower'), axis=1))
+                      .assign(load_inflow=lambda df: df.apply(lambda row: compute_load(row, 'inflow_m3', 'influent median'), axis=1))
+                      .assign(load_inflow_upper=lambda df: df.apply(lambda row: compute_load(row, 'inflow_m3', 'influent upper'), axis=1))
+                      .assign(load_outflow_lower=lambda df: df.apply(lambda row: compute_load(row, 'outflow_m3', 'concentration', backupcol='effluent lower'), axis=1))
+                      .assign(load_outflow=lambda df: df.apply(lambda row: compute_load(row, 'outflow_m3', 'concentration', backupcol='effluent median'), axis=1))
+                      .assign(load_outflow_upper=lambda df: df.apply(lambda row: compute_load(row, 'outflow_m3', 'concentration', backupcol='effluent upper'), axis=1))
+                      .fillna(value={'sampletype': 'unsampled'})
+            )
+
+        return self._tidy_wq
+
+    @property
+    def tidy_hydro(self):
+        return self.storm_info
 
     @property
     def templateISR(self):

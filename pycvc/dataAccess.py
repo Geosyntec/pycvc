@@ -1136,7 +1136,7 @@ class Site(object):
         Parameters
         ----------
         rescol : string (default = 'concentration')
-            The result column to summaryize. Valid values are
+            The result column to summarize. Valid values are
             "concentration" and "load_outflow".
         sampletype : string (default = 'composite')
             The types of samples to be summarized. Valid values are
@@ -1164,7 +1164,7 @@ class Site(object):
         dc_options = dict(rescol=rescol, qualcol='qualifier', ndval='<',
                           othergroups=othergroups, stationcol='site')
         medians = (
-            self.tidy_data
+            self.wqdata
                 .query("sampletype == @sampletype")
                 .reset_index()
                 .pipe(wqio.DataCollection, **dc_options)
@@ -1289,7 +1289,63 @@ class Site(object):
 
         return loads[final_cols_order].rename(columns=dict(zip(final_cols_order, final_cols)))
 
-    def _unsampled_load_estimates(self,  sampletype='composite', excluded_dates=None, timegroup=None, NAval=None):
+    def _unsampled_loads(self, sampletype, excluded_dates, NAval=None):
+        rename_cols = {
+            'peak_precip_intensity': 'peak_precip_intensity_mm_per_hr',
+            'total_precip_depth': 'total_precip_depth_mm',
+            'peak_outflow': 'peak_outflow_L_per_s',
+            'influent median': 'influent_median',
+            'Median Effluent': 'effluent_median'
+        }
+
+        final_cols = [
+            'site', 'sampletype', 'season', 'has_outflow', 'parameter', 'units',
+            'influent_median', 'effluent_median', 'storm_number', 'antecedent_days',
+            'start_date', 'end_date', 'duration_hours', 'peak_precip_intensity_mm_per_hr',
+            'total_precip_depth_mm', 'runoff_m3', 'bypass_m3', 'inflow_m3', 'outflow_m3',
+            'peak_outflow_L_per_s', 'centroid_lag_hours', 'peak_lag_hours',
+            'load_units', 'load_factor', 'load_runoff', 'load_bypass',
+            'load_inflow', 'load_outflow'
+          ]
+
+        index = pandas.MultiIndex.from_product(
+            [self.unsampled_storms, self.tidy_data['parameter'].unique()],
+            names=['storm_number', 'parameter']
+        )
+
+        def compute_load(df, volcol, conccol, conversioncol='load_factor', NAval=None):
+            load = df['load_factor'] * df[volcol] * df[conccol]
+            if NAval is not None:
+                load = load.fillna(NAval)
+            return load
+
+        unsampled_loads = (
+            pandas.DataFrame(index=index, columns=['_junk'])
+                  .reset_index()
+                  .merge(self.storm_info, on='storm_number')
+                  .merge(self.influentmedians, on=['parameter', 'season'])
+                  .merge(self.medians('concentration', timegroup='season'), on=['parameter', 'season', 'units'])
+                  .pipe(_remove_storms_from_df, excluded_dates, "start_date")
+                  .assign(site=self.siteid, sampletype='unsampled')
+                  .assign(load_units=lambda df: df['parameter'].apply(lambda p: info.getPOCInfo('cvcname', p, 'load_units')))
+                  .assign(load_factor=lambda df: df['parameter'].apply(lambda p: info.getPOCInfo('cvcname', p, 'load_factor')))
+                  .assign(load_runoff_lower=lambda df: compute_load(df, 'runoff_m3', 'influent lower'))
+                  .assign(load_runoff=lambda df: compute_load(df, 'runoff_m3', 'influent median'))
+                  .assign(load_runoff_upper=lambda df: compute_load(df, 'runoff_m3', 'influent upper'))
+                  .assign(load_bypass_lower=lambda df: compute_load(df, 'bypass_m3', 'influent lower'))
+                  .assign(load_bypass=lambda df: compute_load(df, 'bypass_m3', 'influent median'))
+                  .assign(load_bypass_upper=lambda df: compute_load(df, 'bypass_m3', 'influent upper'))
+                  .assign(load_inflow_lower=lambda df: compute_load(df, 'inflow_m3', 'influent lower'))
+                  .assign(load_inflow=lambda df: compute_load(df, 'inflow_m3', 'influent median'))
+                  .assign(load_inflow_upper=lambda df: compute_load(df, 'inflow_m3', 'influent upper'))
+                  .assign(load_outflow_lower=lambda df: compute_load(df, 'outflow_m3', 'effluent lower'))
+                  .assign(load_outflow=lambda df: compute_load(df, 'outflow_m3', 'effluent median'))
+                  .assign(load_outflow_upper=lambda df: compute_load(df, 'outflow_m3', 'effluent upper'))
+        )
+
+        return unsampled_loads
+
+    def unsampled_load_estimates(self,  sampletype='composite', excluded_dates=None, timegroup=None, NAval=None):
         """ Returns the loading estimates for unsampled storms.
 
         Influent concentration values from the 95% confidence intervals
@@ -1325,68 +1381,18 @@ class Site(object):
 
         """
 
-        rename_cols = {
-            'peak_precip_intensity': 'peak_precip_intensity_mm_per_hr',
-            'total_precip_depth': 'total_precip_depth_mm',
-            'peak_outflow': 'peak_outflow_L_per_s',
-            'influent median': 'influent_median',
-            'Median Effluent': 'effluent_median'
-        }
-
-        final_cols = [
-            'site', 'sampletype', 'season', 'has_outflow', 'parameter', 'units',
-            'influent_median', 'effluent_median', 'storm_number', 'antecedent_days',
-            'start_date', 'end_date', 'duration_hours', 'peak_precip_intensity_mm_per_hr',
-            'total_precip_depth_mm', 'runoff_m3', 'bypass_m3', 'inflow_m3', 'outflow_m3',
-            'peak_outflow_L_per_s', 'centroid_lag_hours', 'peak_lag_hours',
-            'load_units', 'load_factor', 'load_runoff', 'load_bypass',
-            'load_inflow', 'load_outflow'
-          ]
-
-        index = pandas.MultiIndex.from_product(
-            [self.unsampled_storms, self.tidy_data['parameter'].unique()],
-            names=['storm_number', 'parameter']
-        )
-
-        def compute_load(df, volcol, conccol, conversioncol='load_factor', NAval=None):
-            load = df['load_factor'] * df[volcol] * df[conccol]
-            if NAval is not None:
-                load = load.fillna(NAval)
-            return load
-
-        sampletyle = _check_sampletype(sampletype)
+        sampletype = _check_sampletype(sampletype)
         timecol = _check_timegroup(timegroup)
         groupcols = ['site', 'sampletype', 'parameter', 'load_units', 'has_outflow']
         if timecol is not None:
             groupcols.append(timecol)
 
         unsampled_loads = (
-            pandas.DataFrame(index=index, columns=['_junk'])
-                  .reset_index()
-                  .merge(self.storm_info, on='storm_number')
-                  .merge(self.influentmedians, on=['parameter', 'season'])
-                  .merge(self.medians('concentration', timegroup='season'), on=['parameter', 'season', 'units'])
-                  .pipe(_remove_storms_from_df, excluded_dates, "start_date")
-                  .assign(site=self.siteid, sampletype='unsampled')
-                  .assign(load_units=lambda df: df['parameter'].apply(lambda p: info.getPOCInfo('cvcname', p, 'load_units')))
-                  .assign(load_factor=lambda df: df['parameter'].apply(lambda p: info.getPOCInfo('cvcname', p, 'load_factor')))
-                  .assign(load_runoff_lower=lambda df: compute_load(df, 'runoff_m3', 'influent lower'))
-                  .assign(load_runoff=lambda df: compute_load(df, 'runoff_m3', 'influent median'))
-                  .assign(load_runoff_upper=lambda df: compute_load(df, 'runoff_m3', 'influent upper'))
-                  .assign(load_bypass_lower=lambda df: compute_load(df, 'bypass_m3', 'influent lower'))
-                  .assign(load_bypass=lambda df: compute_load(df, 'bypass_m3', 'influent median'))
-                  .assign(load_bypass_upper=lambda df: compute_load(df, 'bypass_m3', 'influent upper'))
-                  .assign(load_inflow_lower=lambda df: compute_load(df, 'inflow_m3', 'influent lower'))
-                  .assign(load_inflow=lambda df: compute_load(df, 'inflow_m3', 'influent median'))
-                  .assign(load_inflow_upper=lambda df: compute_load(df, 'inflow_m3', 'influent upper'))
-                  .assign(load_outflow_lower=lambda df: compute_load(df, 'outflow_m3', 'effluent lower'))
-                  .assign(load_outflow=lambda df: compute_load(df, 'outflow_m3', 'effluent median'))
-                  .assign(load_outflow_upper=lambda df: compute_load(df, 'outflow_m3', 'effluent upper'))
-                  .select(lambda c: ('median' in c) or ('load' in c) or (c in groupcols), axis=1)
-                  .groupby(by=groupcols)
-                  .sum()
-                  .reset_index()
-                  .sort_values(by=groupcols)
+            self._unsampled_loads(sampletype, excluded_dates, NAval=NAval)
+                .groupby(by=groupcols)
+                .sum()
+                .reset_index()
+                .sort_values(by=groupcols)
         )
 
         return unsampled_loads
@@ -1576,8 +1582,6 @@ class Site(object):
         )
 
         return fig
-
-
 
     def allISRs(self, sampletype, version='draft'):
         """ Compiles all Individual Storm Reports for a site

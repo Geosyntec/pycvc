@@ -176,11 +176,11 @@ POC_dicts = [
         'bmpname': None,
         'nsqdname': 'Oil and Grease',
         'conc_units': {
-            'plain': 'ug/L',
-            'tex': r'\si[per-mode=symbol]{\micro\gram\per\liter}'
+            'plain': 'mg/L',
+            'tex': r'\si[per-mode=symbol]{\milli\gram\per\liter}'
             },
         'load_units': 'g',
-        'load_factor': LITERS_PER_CUBICMETER / MICROGRAMS_PER_GRAM,
+        'load_factor': LITERS_PER_CUBICMETER / MILLIGRAMS_PER_GRAM,
         'group': 'B',
         'include': False,
     }, {

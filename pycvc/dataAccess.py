@@ -27,6 +27,12 @@ LITERS_PER_CUBICMETER = 1000.
 MILLIMETERS_PER_METER = 1000.
 
 
+def _fix_cvc_bacteria_units(df, unitscol='units'):
+    df = df.copy()
+    df[unitscol] = df[unitscol].replace(to_replace='CFU/100mL', value='CFU/100 mL')
+    return df
+
+
 def _check_sampletype(sampletype):
     """ Confirms that a given value is a valid sampletype and returns
     the all lowercase version of it.
@@ -528,15 +534,14 @@ class Site(object):
     @property
     def wqdata(self):
         if self._wqdata is None:
-            self._wqdata = self.db.getWQData(
-                self.siteid, onlyPOCs=self.onlyPOCs
-            )
             self._wqdata = (
-                self._wqdata
-                    .assign(season=self._wqdata['samplestart'].apply(utils.getSeason))
-                    .assign(grouped_season=self._wqdata['samplestart'].apply(_grouped_seasons))
-                    .assign(year=self._wqdata['samplestart'].dt.year.astype(str))
-                    .assign(sampletype=self._wqdata['sampletype'].str.lower())
+                self.db
+                    .getWQData(self.siteid, onlyPOCs=self.onlyPOCs)
+                    .assign(season=lambda df: df['samplestart'].apply(utils.getSeason))
+                    .assign(grouped_season=lambda df: df['samplestart'].apply(_grouped_seasons))
+                    .assign(year=lambda df: df['samplestart'].dt.year.astype(str))
+                    .assign(sampletype=lambda df: df['sampletype'].str.lower())
+                    .pipe(_fix_cvc_bacteria_units)
             )
         return self._wqdata
 

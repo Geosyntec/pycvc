@@ -22,6 +22,13 @@ bmpcats_to_use = [
 ]
 
 
+def _fix_nsqd_bacteria_units(df, unitscol='units'):
+    df = df.copy()
+    df[unitscol] = df[unitscol].replace(to_replace='MPN/100 mL', value='CFU/100 mL')
+    return df
+
+
+
 class _external_source(object):
     def boxplot(self, ax, position, xlabels, **selection_kwds):
         for label in self.labels:
@@ -82,6 +89,7 @@ class nsqd(_external_source):
                       .groupby(by=self.index_cols)
                       .first()
                       .reset_index()
+                      .pipe(_fix_nsqd_bacteria_units)
             )
         return self._data
 

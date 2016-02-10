@@ -1245,6 +1245,112 @@ class WQMegaFigure(object):
                                         load=load)
 
 
+def collect_tidy_data(sites, fxn):
+    return pandas.concat([fxn(site) for site in sites])
+
+
+def load_summary_table(tidy_wq, excluded_storms):
+    """ Produces a summary table of loads and confidence intervals
+    from tidy water quality data.
+    """
+    def set_column_name(df):
+        df.columns.names = ['quantity']
+        return df
+
+    def formatter(row, location):
+        cols = 'load_{0};load_{0}_lower;load_{0}_upper'.format(location).split(';')
+        row_str = "{} ({}; {})".format(*row[cols])
+        return row_str
+
+    def drop_unit_index(df):
+        df = df.copy()
+        df.index = df.index.droplevel('units')
+        return df
+
+    def set_no_outlow_zero(df):
+        col = ('Effluent', 'unsampled', 'No')
+        df[col] = 0
+        return df
+
+    def set_measured_effl(df):
+        col = ('Effluent', 'composite', 'Yes')
+        df[col] = df[col].apply(lambda x: str(x).split(' ')[0])
+        return df
+
+    def swal_col_levels(df, ii, jj):
+        df.columns = df.columns.swaplevel(ii, jj)
+        return df
+
+    def pct_reduction(df, incol, outcol):
+        return 100 * (df[incol] - df[outcol]) / df[incol]
+
+
+    final_cols = [
+        ('Influent', 'unsampled', 'No'), ('Effluent', 'unsampled', 'No'),
+        ('Influent', 'unsampled', 'Yes'), ('Effluent', 'unsampled', 'Yes'),
+        ('Influent', 'composite', 'Yes'), ('Effluent', 'composite', 'Yes'),
+        'Reduction'
+    ]
+
+    final_params = [
+        'Nitrate + Nitrite', 'Nitrate (N)', 'Orthophosphate (P)',
+        'Cadmium (Cd)', 'Copper (Cu)', 'Iron (Fe)',
+        'Total Kjeldahl Nitrogen (TKN)', 'Lead (Pb)',
+        'Nickel (Ni)', 'Total Phosphorus',
+        'Total Suspended Solids', 'Zinc (Zn)',
+    ]
+
+    loads = (
+      tidy_wq.pipe(dataAccess._remove_storms_from_df, excluded_storms, 'samplestart')
+          .groupby(by=['parameter', 'units', 'has_outflow', 'sampletype'])
+          .sum()
+          .pipe(set_column_name)
+          .select(lambda c: c.startswith('load_inflow') or c.startswith('load_outflow'), axis=1)
+          .unstack(level='has_outflow')
+          .pipe(swal_col_levels, 'has_outflow', 'quantity')
+          .stack(level='has_outflow')
+          .dropna()
+          .pipe(drop_unit_index)
+    )
+
+    main = (
+        loads.applymap(lambda x: wqio.utils.sigFigs(x, n=3, expthresh=7))
+          .assign(Influent=lambda df: df.apply(formatter, args=('inflow',), axis=1))
+          .assign(Effluent=lambda df: df.apply(formatter, args=('outflow',), axis=1))
+          .unstack(level='sampletype')
+          .unstack(level='has_outflow')
+          [['Influent', 'Effluent']]
+          .dropna(how='all', axis=1)
+    )
+
+    reduction = (
+        loads.groupby(level='parameter').sum()
+             .assign(load_red=lambda df: pct_reduction(df, 'load_inflow', 'load_outflow'))
+             .assign(load_red_upper=lambda df: pct_reduction(df, 'load_inflow_upper', 'load_outflow_lower'))
+             .assign(load_red_lower=lambda df: pct_reduction(df, 'load_inflow_lower', 'load_outflow_upper'))
+             .applymap(lambda x: wqio.utils.sigFigs(x, n=3, expthresh=7))
+             .assign(Reduction=lambda df: df.apply(formatter, args=('red',), axis=1))
+    )
+
+    summary = (
+        main.join(reduction)
+            .loc[final_params, final_cols]
+            .pipe(set_no_outlow_zero)
+            .pipe(set_measured_effl)
+    )
+
+    return summary
+
+
+def classify_storms(df, valuecol, newcol='storm_bin', bins=None):
+    if bins is None:
+        bins = np.arange(5, 26, 5)
+    classifier = partial(utils.misc._classifier, bins=bins, units='mm')
+    cats = utils.misc._unique_categories(classifier, bins=bins)
+    df[newcol] = df[valuecol].apply(classifier).astype("category", categories=cats, ordered=True)
+    return df
+
+
 @np.deprecate
 class SummaryAppendix(object):
     def __init__(self, siteobjects, sampletype, parameterdict, paramgrouplist,

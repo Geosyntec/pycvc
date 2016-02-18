@@ -1,4 +1,6 @@
 import os
+import csv
+from functools import partial
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -16,6 +18,7 @@ from . import dataAccess
 from . import info
 from . import viz
 from .external import bmpcats_to_use
+from . import validate
 
 
 __all__ = [
@@ -49,7 +52,7 @@ class WQItem(object):
         self.siteid = self.site.siteid
 
         # sample type (grab or comp)
-        self.sampletype = dataAccess._check_sampletype(sampletype)
+        self.sampletype = validate.sampletype(sampletype)
         self.parametername = parametername
 
         # properties to be lazily-loaded when needed.
@@ -176,7 +179,7 @@ class WQComparison(object):
         self.NSites = len(siteobjects)
 
         # sample type (grab or comp)
-        self.sampletype = dataAccess._check_sampletype(sampletype)
+        self.sampletype = validate.sampletype(sampletype)
         self.parametername = parametername
         self.cvcparameter = parametername
 
@@ -1246,12 +1249,34 @@ class WQMegaFigure(object):
 
 
 def collect_tidy_data(sites, fxn):
-    return pandas.concat([fxn(site) for site in sites])
+    return pandas.concat([fxn(site) for site in sites], ignore_index=True)
 
 
-def load_summary_table(tidy_wq, excluded_storms):
-    """ Produces a summary table of loads and confidence intervals
-    from tidy water quality data.
+def classify_storms(df, valuecol, newcol='storm_bin', bins=None):
+    if bins is None:
+        bins = np.arange(5, 26, 5)
+    classifier = partial(utils.misc._classifier, bins=bins, units='mm')
+    cats = utils.misc._unique_categories(classifier, bins=bins)
+    df[newcol] = df[valuecol].apply(classifier).astype("category", categories=cats, ordered=True)
+    return df
+
+
+def prevalence_table(wq, rescol='concentration', groupby_col=None):
+    """ Returns a sample prevalence table for the given sample type.
+    """
+    by = ['site', 'parameter']
+    if groupby_col is not None:
+        by.append(validate.groupby_col(groupby_col))
+
+    pt = (
+        wq.query("sampletype == 'composite'")
+            .groupby(by=by)
+            .count()[rescol]
+            .unstack(level='parameter')
+            .reset_index()
+    )
+    return pt
+
     """
     def set_column_name(df):
         df.columns.names = ['quantity']

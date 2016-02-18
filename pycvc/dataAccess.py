@@ -15,6 +15,7 @@ from wqio import utils
 # CVC project info
 from . import info
 from . import viz
+from . import validate
 
 # CVC-specific wqio.events subclasses
 from .samples import GrabSample, CompositeSample, Storm
@@ -31,39 +32,6 @@ def _fix_cvc_bacteria_units(df, unitscol='units'):
     df = df.copy()
     df[unitscol] = df[unitscol].replace(to_replace='CFU/100mL', value='CFU/100 mL')
     return df
-
-
-def _check_sampletype(sampletype):
-    """ Confirms that a given value is a valid sampletype and returns
-    the all lowercase version of it.
-    """
-    if sampletype.lower() not in ('grab', 'composite'):
-        raise ValueError("`sampletype` must be 'composite' or 'grab'")
-
-    return sampletype.lower()
-
-
-def _check_rescol(rescol):
-    """ Comfirms that a give value is a valid results column and returns
-    the corresponding units column and results column.
-    """
-    if rescol.lower() == 'concentration':
-        unitscol = 'units'
-    elif rescol.lower() == 'load_outflow':
-        unitscol = 'load_units'
-    else:
-        raise ValueError("`rescol` must be in ['concentration', 'load_outflow']")
-    return rescol.lower(), unitscol
-
-
-def _check_timegroup(timegroup):
-    valid_groups = ['season', 'grouped_season', 'year']
-    if timegroup is None:
-        return timegroup
-    elif timegroup.lower() in valid_groups:
-        return timegroup.lower()
-    else:
-        raise ValueError("{} is not a valid time group ({})".format(timegroup, valid_groups))
 
 
 def _grouped_seasons(timestamp):
@@ -724,7 +692,8 @@ class Site(object):
 
         return self._storm_info
 
-    def storm_stats(self, minprecip=0, excluded_dates=None, timegroup=None, **winsor_params):
+    @np.deprecate
+    def storm_stats(self, minprecip=0, excluded_dates=None, groupby_col=None, **winsor_params):
         """ Statistics summarizing all the storm events
 
         Parameters
@@ -736,7 +705,7 @@ class Site(object):
         excluded_dates : list of date-likes, optional
             This is a list of storm start dates that will be removed
             from the storms dataframe prior to computing statistics.
-        timegroup : string, optional
+        groupby_col : string, optional
             Optional string that defined how results should be group
             temporally. Valid options are "season", "grouped_season",
             and year. Default behavior does no temporal grouping.
@@ -756,7 +725,7 @@ class Site(object):
 
         """
 
-        timecol = _check_timegroup(timegroup)
+        timecol = validate.groupby_col(groupby_col)
         if timecol is None:
             groups = ['site']
         else:
@@ -896,7 +865,7 @@ class Site(object):
                       .assign(units=lambda df: df['parameter'].apply(lambda x: info.getPOCInfo('cvcname', x, 'conc_units')['plain']))
                       .merge(self.storm_info, on='storm_number', how='outer')
                       .merge(self.influentmedians, on=['parameter', 'season', 'units'], how='outer')
-                      .merge(self.medians('concentration', timegroup='season'), on=['parameter', 'season', 'units'], how='outer')
+                      .merge(self.effluent('concentration', groupby_col='season'), on=['parameter', 'season', 'units'], how='outer')
                       .merge(wq, on=['parameter', 'storm_number', 'site', 'year', 'season', 'grouped_season', 'units'], how='outer')
                       .assign(load_units=lambda df: df['parameter'].apply(lambda p: info.getPOCInfo('cvcname', p, 'load_units')))
                       .assign(load_factor=lambda df: df['parameter'].apply(lambda p: info.getPOCInfo('cvcname', p, 'load_factor')))
@@ -967,7 +936,7 @@ class Site(object):
         """ Returns of the sample collected start dates/times for a
         gived sampletype
         """
-        sampletype = _check_sampletype(sampletype)
+        sampletype = validate.sampletype(sampletype)
 
         if which.lower() == 'start':
             finalcol = 'samplestart'
@@ -983,7 +952,7 @@ class Site(object):
         """ Returns all of the storm numbers of storms where a given
         sampletype was collected.
         """
-        sampletype = _check_sampletype(sampletype)
+        sampletype = validate.sampletype(sampletype)
         return self.tidy_data.query("sampletype == @sampletype")['storm_number'].unique()
 
     def _get_storms_without_data(self, sampletype='composite'):
@@ -1032,15 +1001,16 @@ class Site(object):
 
         return sampledates
 
-    def _wq_summary(self, rescol='concentration', sampletype='composite', excluded_dates=None, timegroup=None):
+    @np.deprecate
+    def _wq_summary(self, rescol='concentration', sampletype='composite', excluded_dates=None, groupby_col=None):
         """ Returns a dataframe of seasonal or overall water quality
         stats for the given sampletype.
         """
-        rescol, unitscol = _check_rescol(rescol)
-        if timegroup is None:
+        rescol, unitscol = validate.rescol(rescol)
+        if groupby_col is None:
             groupcols = ['parameter', unitscol]
         else:
-            groupcols = ['parameter', unitscol, timegroup]
+            groupcols = ['parameter', unitscol, groupby_col]
 
         data = _remove_storms_from_df(self.tidy_data, excluded_dates, "start_date")
 
@@ -1089,7 +1059,8 @@ class Site(object):
 
         return all_data[columns].rename(columns=stat_labels)
 
-    def wq_summary(self, rescol='concentration', sampletype='composite', excluded_dates=None, timegroup=None):
+    @np.deprecate
+    def wq_summary(self, rescol='concentration', sampletype='composite', excluded_dates=None, groupby_col=None):
         """ Basical water quality Statistics
 
         Parameters
@@ -1103,7 +1074,7 @@ class Site(object):
         excluded_dates : list of date-likes, optional
             This is a list of storm start dates that will be removed
             from the storms dataframe prior to computing statistics.
-        timegroup : string, optional
+        groupby_col : string, optional
             Optional string that defined how results should be group
             temporally. Valid options are "season", "grouped_season",
             and year. Default behavior does no temporal grouping.
@@ -1114,22 +1085,43 @@ class Site(object):
 
         """
 
-        sampletype = _check_sampletype(sampletype)
-        rescol, unitscol = _check_rescol(rescol)
-        timecol = _check_timegroup(timegroup)
+        sampletype = validate.sampletype(sampletype)
+        rescol, unitscol = validate.rescol(rescol)
+        timecol = validate.groupby_col(groupby_col)
 
         overall = self._wq_summary(rescol=rescol, sampletype=sampletype,
-                                   excluded_dates=excluded_dates, timegroup=None)
+                                   excluded_dates=excluded_dates, groupby_col=None)
         if timecol is None:
             return overall
         else:
             seasonal = self._wq_summary(rescol=rescol, sampletype=sampletype,
-                                        excluded_dates=excluded_dates, timegroup=timegroup)
+                                        excluded_dates=excluded_dates, groupby_col=groupby_col)
             overall[timecol] = 'all'
             overall = overall.reset_index().set_index(['parameter', unitscol, timecol])
             return seasonal.append(overall).sort_index().T
 
-    def medians(self, rescol='concentration', sampletype='composite', timegroup=None):
+    def _make_dc(self, rescol, sampletype, groupby_col=None):
+        sampletype = validate.sampletype(sampletype)
+        rescol, unitscol = validate.rescol(rescol)
+        timecol = validate.groupby_col(groupby_col)
+
+        if timecol is None:
+            othergroups = [unitscol]
+        else:
+            othergroups = [unitscol, timecol]
+
+        dc_options = dict(rescol=rescol, qualcol='qualifier', ndval='<',
+                          othergroups=othergroups, stationcol='site')
+        dc = (
+            self.wqdata
+                .query("sampletype == @sampletype")
+                .reset_index()
+                .pipe(wqio.DataCollection, **dc_options)
+        )
+
+        return dc
+
+    def medians(self, rescol='concentration', sampletype='composite', groupby_col=None):
         """ Returns a DataFrame of the WQ medians for the given
         sampletype.
 
@@ -1141,10 +1133,10 @@ class Site(object):
         sampletype : string (default = 'composite')
             The types of samples to be summarized. Valid values are
             "composite" and "grab".
-        timegroup : string, optional
+        groupby_col : string, optional
             Optional string that defined how results should be group
             temporally. Valid options are "season", "grouped_season",
-            and year. Default behavior does no temporal grouping.
+            and "year". Default behavior does no temporal grouping.
 
         Returns
         -------
@@ -1152,22 +1144,8 @@ class Site(object):
 
         """
 
-        sampletype = _check_sampletype(sampletype)
-        rescol, unitscol = _check_rescol(rescol)
-        timecol = _check_timegroup(timegroup)
-
-        if timecol is None:
-            othergroups = [unitscol]
-        else:
-            othergroups = [unitscol, timecol]
-
-        dc_options = dict(rescol=rescol, qualcol='qualifier', ndval='<',
-                          othergroups=othergroups, stationcol='site')
         medians = (
-            self.wqdata
-                .query("sampletype == @sampletype")
-                .reset_index()
-                .pipe(wqio.DataCollection, **dc_options)
+            self._make_dc(rescol, sampletype, groupby_col=groupby_col)
                 .medians[self.siteid]
                 .rename(columns={'stat': 'median'})
                 .rename(columns=lambda c: 'effluent {}'.format(c))
@@ -1175,7 +1153,61 @@ class Site(object):
         )
         return medians
 
-    def sampled_loads(self, sampletype='composite', excluded_dates=None, timegroup=None, NAval=None):
+    def effluent(self, rescol='concentration', sampletype='composite', groupby_col=None):
+        """ Returns a DataFrame of the characteristic effluent WQ for
+        the given sampletype.
+
+        Parameters
+        ----------
+        rescol : string (default = 'concentration')
+            The result column to summarize. Valid values are
+            "concentration" and "load_outflow".
+        sampletype : string (default = 'composite')
+            The types of samples to be summarized. Valid values are
+            "composite" and "grab".
+        groupby_col : string, optional
+            Optional string that defined how results should be group
+            temporally. Valid options are "season", "grouped_season",
+            and "year". Default behavior does no temporal grouping.
+
+        Returns
+        -------
+        effluent : pandas.DataFrame
+
+        """
+        def notches(med, IQR, N):
+            notch_min = med - 1.57 * IQR / np.sqrt(N)
+            notch_max = med + 1.57 * IQR / np.sqrt(N)
+            final_cols = ['effluent lower', 'effluent median', 'effluent upper']
+            notches = (
+                notch_min.join(notch_max, lsuffix='_lower', rsuffix='_upper')
+                         .join(med.rename(columns={'ros_concentration': 'effluent median'}))
+                         .rename(columns=lambda c: c.replace('ros_concentration_', 'effluent '))
+                         [final_cols]
+                         .reset_index()
+            )
+            return notches
+
+        if self.compdates.shape[0] > 10:
+            return self.medians(rescol=rescol, sampletype=sampletype, groupby_col=groupby_col)
+        else:
+            dc = self._make_dc(rescol, sampletype, groupby_col=groupby_col)
+
+            # use the 5/95 percentiles
+            statcol = 'ros_concentration'
+            lower = dc.percentiles(5)[self.siteid].rename(columns={statcol: 'effluent lower'})
+            med = dc.percentiles(50)[self.siteid].rename(columns={statcol: 'effluent median'})
+            upper = dc.percentiles(95)[self.siteid].rename(columns={statcol: 'effluent upper'})
+            return lower.join(med).join(upper).reset_index()
+
+            ## uses the normal approximation
+            # med = dc.percentiles(50)[self.siteid]
+            # IQR = (dc.percentiles(75) - dc.percentiles(25))[self.siteid]
+            # counts = dc.count[self.siteid]
+            # return notches(med, IQR, counts)
+
+    @np.deprecate
+    def sampled_loads(self, sampletype='composite', excluded_dates=None, groupby_col=None, NAval=None):
         """ Returns the total loads for sampled storms and the given
         sampletype.
 
@@ -1184,7 +1216,7 @@ class Site(object):
         sampletype : string (default = 'composite')
             The types of samples to be summarized. Valid values are
             "composite" and "grab".
-        timegroup : string, optional
+        groupby_col : string, optional
             Optional string that defined how results should be group
             temporally. Valid options are "season", "grouped_season",
             and year. Default behavior does no temporal grouping.
@@ -1201,8 +1233,8 @@ class Site(object):
 
         """
 
-        sampletype = _check_sampletype(sampletype)
-        timecol = _check_timegroup(timegroup)
+        sampletype = validate.sampletype(sampletype)
+        timecol = validate.groupby_col(groupby_col)
         if timecol is None:
             groupcols = ['parameter', 'load_units']
         else:
@@ -1324,7 +1356,7 @@ class Site(object):
                   .reset_index()
                   .merge(self.storm_info, on='storm_number')
                   .merge(self.influentmedians, on=['parameter', 'season'])
-                  .merge(self.medians('concentration', timegroup='season'), on=['parameter', 'season', 'units'])
+                  .merge(self.effluent('concentration', groupby_col='season'), on=['parameter', 'season', 'units'])
                   .pipe(_remove_storms_from_df, excluded_dates, "start_date")
                   .assign(site=self.siteid, sampletype='unsampled')
                   .assign(load_units=lambda df: df['parameter'].apply(lambda p: info.getPOCInfo('cvcname', p, 'load_units')))
@@ -1345,7 +1377,7 @@ class Site(object):
 
         return unsampled_loads
 
-    def unsampled_load_estimates(self,  sampletype='composite', excluded_dates=None, timegroup=None, NAval=None):
+    def unsampled_load_estimates(self,  sampletype='composite', excluded_dates=None, groupby_col=None, NAval=None):
         """ Returns the loading estimates for unsampled storms.
 
         Influent concentration values from the 95% confidence intervals
@@ -1358,7 +1390,7 @@ class Site(object):
         sampletype : string (default = 'composite')
             The types of samples to be summarized. Valid values are
             "composite" and "grab".
-        timegroup : string, optional
+        groupby_col : string, optional
             Optional string that defined how results should be group
             temporally. Valid options are "season", "grouped_season",
             and year. Default behavior does no temporal grouping.
@@ -1381,8 +1413,8 @@ class Site(object):
 
         """
 
-        sampletype = _check_sampletype(sampletype)
-        timecol = _check_timegroup(timegroup)
+        sampletype = validate.sampletype(sampletype)
+        timecol = validate.groupby_col(groupby_col)
         groupcols = ['site', 'sampletype', 'parameter', 'load_units', 'has_outflow']
         if timecol is not None:
             groupcols.append(timecol)
@@ -1397,10 +1429,11 @@ class Site(object):
 
         return unsampled_loads
 
+    @np.deprecate
     def prevalence_table(self, sampletype='composite'):
         """ Returns a sample prevalence table for the given sample type.
         """
-        sampletype = _check_sampletype(sampletype)
+        sampletype = validate.sampletype(sampletype)
         pt = (
             self.wqdata
                 .query("sampletype == @sampletype")
@@ -1412,6 +1445,7 @@ class Site(object):
         )
         return pt
 
+    @np.deprecate
     def hydro_jointplot(self, xcol, ycol, conditions=None, one2one=True):
         """ Creates a joint distribution plot of two hydrologic
         quantities.
@@ -1459,6 +1493,7 @@ class Site(object):
 
         viz._savefig(jg.fig, figname, extra='HydroJointPlot')
 
+    @np.deprecate
     def hydro_pairplot(self, by='season', palette=None):
         """ Creates a pairplot of hydrologic quantities.
 
@@ -1552,6 +1587,7 @@ class Site(object):
         figname = '{}-HydroPairPlot_by_{}'.format(self.siteid, by)
         viz._savefig(pg.fig, figname, extra='HydroPairPlot')
 
+    @np.deprecate
     def hydro_histogram(self, valuecol='total_precip_depth', bins=None,
                         **factoropts):
         """ Plot a faceted, categorical histogram of storms.

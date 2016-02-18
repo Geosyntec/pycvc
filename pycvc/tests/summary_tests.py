@@ -1,5 +1,6 @@
 from io import StringIO
 from textwrap import dedent
+from datetime import date
 
 import nose.tools as nt
 import numpy as np
@@ -55,3 +56,31 @@ def test_prevalence_table():
     result_df = summary.prevalence_table(input_df, rescol='rescol', groupby_col='season')
     pdtest.assert_frame_equal(result_df, expected_df)
 
+
+def test_remove_load_data_from_storms():
+    input_df = pandas.DataFrame({
+        'date': [
+            pandas.Timestamp('2016-01-02 12:30'),
+            pandas.Timestamp('2016-01-02 14:30'),
+            pandas.Timestamp('2016-01-03 12:30'),
+        ],
+        'conc': [1., 2., 3.],
+        'load': [1., 2., 4.],
+        'load_a': [1., 2., 5.],
+        'load_b': [1., 2., 6.]
+    })
+
+    expected_df = pandas.DataFrame({
+        'date': [
+            pandas.Timestamp('2016-01-02 12:30'),
+            pandas.Timestamp('2016-01-02 14:30'),
+            pandas.Timestamp('2016-01-03 12:30'),
+        ],
+        'conc': [1., 2., 3.],
+        'load': [1., 2., 4.],
+        'load_a': [np.nan, np.nan, 5],
+        'load_b': [np.nan, np.nan, 6]
+    })
+
+    result_df = summary.remove_load_data_from_storms(input_df, [date(2016, 1, 2)], 'date')
+    pdtest.assert_frame_equal(result_df, expected_df)

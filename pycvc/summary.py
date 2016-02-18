@@ -1277,6 +1277,17 @@ def prevalence_table(wq, rescol='concentration', groupby_col=None):
     )
     return pt
 
+
+def remove_load_data_from_storms(df, stormdates, datecol):
+    if np.isscalar(stormdates):
+        stormdates = [stormdates]
+
+    cols_to_clean = df.select(lambda c: c.startswith('load_'), axis=1).columns
+    row_to_clean = df[datecol].dt.date.isin(stormdates)
+    df = df.copy()
+    df.loc[row_to_clean, cols_to_clean] = np.nan
+    return df
+
     """
     def set_column_name(df):
         df.columns.names = ['quantity']

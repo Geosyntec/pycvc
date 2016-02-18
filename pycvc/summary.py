@@ -1288,6 +1288,38 @@ def remove_load_data_from_storms(df, stormdates, datecol):
     df.loc[row_to_clean, cols_to_clean] = np.nan
     return df
 
+
+def pct_reduction(df, incol, outcol):
+    return 100 * (df[incol] - df[outcol]) / df[incol]
+
+
+def load_reduction_pct(wq, groupby_col=None, **load_cols):
+    load_in = load_cols.pop('load_inflow', 'load_inflow')
+    load_out = load_cols.pop('load_outflow', 'load_outflow')
+    load_in_lower = load_cols.pop('load_inflow_lower', 'load_inflow_lower')
+    load_in_upper = load_cols.pop('load_inflow_upper', 'load_inflow_upper')
+    load_out_lower = load_cols.pop('load_outflow_lower', 'load_outflow_lower')
+    load_out_upper = load_cols.pop('load_outflow_upper', 'load_outflow_upper')
+
+    by = ['site', 'parameter', 'load_units']
+    if groupby_col is not None:
+        by.append(groupby_col)
+
+    red = (
+        wq.groupby(by=by)
+            .sum()
+            .assign(load_red=lambda df: pct_reduction(df, load_in, load_out))
+            .assign(load_red_lower=lambda df: pct_reduction(df, load_in_lower, load_out_upper))
+            .assign(load_red_upper=lambda df: pct_reduction(df, load_in_upper, load_out_lower))
+            .select(lambda c: c.startswith('load_red'), axis=1)
+            .join(wq.groupby(by=by).size().to_frame())
+            .rename(columns={0: 'Count'})
+            .dropna()
+            .reset_index()
+    )
+
+    return red
+
     """
     def set_column_name(df):
         df.columns.names = ['quantity']

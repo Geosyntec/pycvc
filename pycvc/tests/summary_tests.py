@@ -84,3 +84,55 @@ def test_remove_load_data_from_storms():
 
     result_df = summary.remove_load_data_from_storms(input_df, [date(2016, 1, 2)], 'date')
     pdtest.assert_frame_equal(result_df, expected_df)
+
+
+def test_pct_reduction():
+    input_df = pandas.DataFrame({
+        'A': [75., 50., 25., 10.],
+        'B': [50., 50., 10., 20.],
+    })
+
+    expected_ser = pandas.Series([33.3333333333, 0., 60., -100.])
+
+    result_ser = summary.pct_reduction(input_df, 'A', 'B')
+
+    pdtest.assert_series_equal(result_ser, expected_ser)
+
+
+def test_load_reduction_pct():
+    input_df = pandas.DataFrame({
+        'A':    np.array([75., 50., 25., 10.]),
+        'A_lo': np.array([70., 45., 20.,  5.]),
+        'A_hi': np.array([80., 55., 30., 15.]),
+        'B':    np.array([50., 50., 10., 20.]),
+        'B_lo': np.array([45., 45.,  5., 15.]),
+        'B_hi': np.array([55., 55., 15., 25.]),
+        'site': ['A', 'B'] * 2,
+        'parameter': ['A'] * 4,
+        'load_units': ['g'] * 4,
+        'season': ['summer'] * 4,
+    })
+
+    expected_df = pandas.DataFrame({
+        'A':    np.array([100., 60.]),
+        'A_lo': np.array([ 90., 50.]),
+        'A_hi': np.array([110., 70.]),
+        'B':    np.array([ 60., 70.]),
+        'B_lo': np.array([ 50., 60.]),
+        'B_hi': np.array([ 70., 80.]),
+        'site': ['A', 'B'],
+        'parameter': ['A'] * 2,
+        'load_units': ['g'] * 2,
+        'season': ['summer'] * 2,
+        'load_red': [40., -10/60.],
+        'load_red_lower': [20./90., -30./50.],
+        'load_red_upper': [60./110., 10./70.],
+    })
+
+    result_df = summary.load_reduction_pct(input_df, groupby_col='season',
+                                            load_inflow='A',
+                                            load_outflow='B',
+                                            load_inflow_lower='A_lo',
+                                            load_inflow_upper='A_hi',
+                                            load_outflow_lower='B_lo',
+                                            load_outflow_upper='B_hi')

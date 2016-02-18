@@ -1320,6 +1320,36 @@ def load_reduction_pct(wq, groupby_col=None, **load_cols):
 
     return red
 
+
+@np.deprecate
+def write_load_reduction_range(reduction_df, site):
+    final_cols = [
+        'Total Suspended Solids',
+        'Cadmium (Cd)',
+        'Copper (Cu)',
+        'Iron (Fe)',
+        'Lead (Pb)',
+        'Nickel (Ni)',
+        'Zinc (Zn)',
+        'Nitrate (N)',
+        'Orthophosphate (P)',
+        'Total Kjeldahl Nitrogen (TKN)',
+        'Total Phosphorus',
+    ]
+    reduction_df = (
+        reduction_df.applymap(lambda x: utils.sigFigs(x, n=2))
+        .apply(lambda r: '{} - {}'.format(r['load_red_lower'], r['load_red_upper']), axis=1)
+        .unstack(level='parameter')
+    )[final_cols]
+
+    reduction_df.xs(site, level='site').to_csv('{}_reduction.csv'.format(site), quoting=csv.QUOTE_ALL)
+
+
+@np.deprecate
+def load_summary_table(wq):
+    """ Produces a summary table of loads and confidence intervals for
+    varying sample/event types (e.g., composite, unsampled w/ or w/o
+    outflor) from tidy water quality data.
     """
     def set_column_name(df):
         df.columns.names = ['quantity']
@@ -1369,8 +1399,7 @@ def load_reduction_pct(wq, groupby_col=None, **load_cols):
     ]
 
     loads = (
-      tidy_wq.pipe(dataAccess._remove_storms_from_df, excluded_storms, 'samplestart')
-          .groupby(by=['parameter', 'units', 'has_outflow', 'sampletype'])
+        wq.groupby(by=['parameter', 'units', 'has_outflow', 'sampletype'])
           .sum()
           .pipe(set_column_name)
           .select(lambda c: c.startswith('load_inflow') or c.startswith('load_outflow'), axis=1)
@@ -1382,7 +1411,7 @@ def load_reduction_pct(wq, groupby_col=None, **load_cols):
     )
 
     main = (
-        loads.applymap(lambda x: wqio.utils.sigFigs(x, n=3, expthresh=7))
+        loads.applymap(lambda x: utils.sigFigs(x, n=3, expthresh=7))
           .assign(Influent=lambda df: df.apply(formatter, args=('inflow',), axis=1))
           .assign(Effluent=lambda df: df.apply(formatter, args=('outflow',), axis=1))
           .unstack(level='sampletype')
@@ -1396,7 +1425,7 @@ def load_reduction_pct(wq, groupby_col=None, **load_cols):
              .assign(load_red=lambda df: pct_reduction(df, 'load_inflow', 'load_outflow'))
              .assign(load_red_upper=lambda df: pct_reduction(df, 'load_inflow_upper', 'load_outflow_lower'))
              .assign(load_red_lower=lambda df: pct_reduction(df, 'load_inflow_lower', 'load_outflow_upper'))
-             .applymap(lambda x: wqio.utils.sigFigs(x, n=3, expthresh=7))
+             .applymap(lambda x: utils.sigFigs(x, n=3, expthresh=7))
              .assign(Reduction=lambda df: df.apply(formatter, args=('red',), axis=1))
     )
 
@@ -1410,13 +1439,60 @@ def load_reduction_pct(wq, groupby_col=None, **load_cols):
     return summary
 
 
-def classify_storms(df, valuecol, newcol='storm_bin', bins=None):
-    if bins is None:
-        bins = np.arange(5, 26, 5)
-    classifier = partial(utils.misc._classifier, bins=bins, units='mm')
-    cats = utils.misc._unique_categories(classifier, bins=bins)
-    df[newcol] = df[valuecol].apply(classifier).astype("category", categories=cats, ordered=True)
-    return df
+def storm_stats(hydro, minprecip=0, excluded_dates=None, groupby_col=None):
+    """ Statistics summarizing all the storm events
+
+    Parameters
+    ----------
+    minprecip : float (default = 0)
+        The minimum amount of precipitation required to for a storm
+        to be included. Using 0 (the default) will likely include
+        some pure snowmelt events.
+    excluded_dates : list of date-likes, optional
+        This is a list of storm start dates that will be removed
+        from the storms dataframe prior to computing statistics.
+    groupby_col : string, optional
+        Optional string that defined how results should be group
+        temporally. Valid options are "season", "grouped_season",
+        and year. Default behavior does no temporal grouping.
+    **winsor_params : optional keyword arguments
+        Dictionary of column names (from `Site.storm_info`) and
+        percetiles at which those columns should be winsorized.
+
+    Returns
+    -------
+    summary : pandas.DataFrame
+
+    See also
+    --------
+    pycvc.Site.storm_info
+    wqio.units.winsorize_dataframe
+    scipy.stats.mstats.winsorize
+
+    """
+
+    timecol = validate.groupby_col(groupby_col)
+
+    by = ['site']
+    if groupby_col is not None:
+        by.append(validate.groupby_col(groupby_col))
+
+    data = (
+        hydro.pipe(dataAccess._remove_storms_from_df, excluded_dates, 'start_date')
+            .query("total_precip_depth > @minprecip")
+    )
+
+    descr = data.groupby(by=by).describe()
+    descr.index.names = by + ['stat']
+    descr = descr.select(lambda c: c != 'storm_number', axis=1)
+    descr.columns.names = ['quantity']
+    storm_stats = (
+        descr.stack(level='quantity')
+             .unstack(level='stat')
+             .reset_index()
+    )
+    return storm_stats
+
 
 
 @np.deprecate

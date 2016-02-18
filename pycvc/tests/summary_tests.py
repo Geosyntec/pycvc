@@ -11,6 +11,10 @@ import pandas.util.testing as pdtest
 from  pycvc import summary
 
 
+def csv_string_as_df(csv_string, **opts):
+    return pandas.read_csv(StringIO(dedent(csv_string)), **opts)
+
+
 def test_classify_storms():
     input_df = pandas.DataFrame({
         'A': np.arange(2, 29, 6),
@@ -30,7 +34,7 @@ def test_classify_storms():
 
 
 def test_prevalence_table():
-    input_df = pandas.read_csv(StringIO(dedent("""\
+    input_df = csv_string_as_df("""\
     site,parameter,season,rescol,sampletype
     A,pA,Fall,1,composite
     A,pA,Fall,1,composite
@@ -44,7 +48,7 @@ def test_prevalence_table():
     B,pB,Spring,1,composite
     B,pB,Winter,1,grab
     B,pB,Winter,1,composite
-    """)))
+    """)
 
     expected_df = pandas.DataFrame({
         'site': ['A', 'A', 'A', 'A', 'B', 'B', 'B', 'B'],
@@ -136,3 +140,36 @@ def test_load_reduction_pct():
                                             load_inflow_upper='A_hi',
                                             load_outflow_lower='B_lo',
                                             load_outflow_upper='B_hi')
+
+def test_storm_stats():
+    input_df = csv_string_as_df("""\
+    site,storm_number,year,season,grouped_season,antecedent_days,start_date,end_date,duration_hours,peak_precip_intensity,total_precip_depth,runoff_m3
+    ED-1,2,2011,summer,summer/autumn,3.1041,2011-07-28 08:30,2011-07-28 10:30,2.000,6.0,5.0000,16.4213
+    ED-1,3,2011,summer,summer/autumn,0.6458,2011-07-29 02:00,2011-07-29 12:20,10.333,3.6,2.2,7.22535
+    ED-1,5,2011,summer,summer/autumn,2.6736,2011-08-03 03:20,2011-08-03 05:20,2.000,12.0,12.8,42.0384
+    ED-1,8,2011,summer,summer/autumn,2.7361,2011-08-07 04:10,2011-08-08 00:00,19.833,38.4,26.6,87.36105
+    ED-1,9,2011,summer,summer/autumn,1.2638,2011-08-09 06:20,2011-08-09 14:30,8.166,20.4,34.6,113.63505
+    ED-1,10,2011,summer,summer/autumn,0.3472,2011-08-09 22:50,2011-08-09 23:40,0.833,14.4,5.800,19.04865
+    ED-1,14,2011,summer,summer/autumn,0.4027,2011-08-21 13:50,2011-08-21 16:40,2.833,28.8,6.0,19.7055
+    ED-1,17,2011,summer,summer/autumn,0.4166,2011-08-24 20:20,2011-08-24 22:30,2.166,27.6,11.2,36.7836
+    ED-1,19,2011,summer,summer/autumn,6.7430,2011-09-01 01:10,2011-09-01 02:30,1.333,4.8,5.0,16.42125
+    ED-1,21,2011,summer,summer/autumn,1.8402,2011-09-03 09:20,2011-09-03 14:50,5.500,14.4,4.4,14.4507
+    ED-1,24,2011,summer,summer/autumn,0.2638,2011-09-04 19:00,2011-09-04 19:50,0.833,10.8,4.0,13.137
+    """, parse_dates=['start_date', 'end_date'])
+
+    expected_df = csv_string_as_df("""\
+    site,season,quantity,count,mean,std,min,25%,50%,75%,max
+    ED-1,summer,antecedent_days,4.0,1.7726,1.1310,0.4167,1.0521,1.9687,2.689225,2.7361
+    ED-1,summer,duration_hours,4.0,8.0417,8.3681,2.0,2.125,5.16667,11.08275,19.8333
+    ED-1,summer,peak_precip_intensity,4.0,24.6,11.19285,12.0,18.3,24.0,30.3,38.4
+    ED-1,summer,runoff_m3,4.0,69.9545,36.9260,36.7836,40.7247,64.6997,93.92955,113.635
+    ED-1,summer,total_precip_depth,4.0,21.3,11.24334,11.2,12.4,19.7,28.6,34.6
+    ED-1,summer,year,4.0,2011.0,0.0,2011.0,2011.0,2011.0,2011.0,2011.0
+    """)
+    expected_df.columns.names = ['stat']
+
+    result_df = summary.storm_stats(input_df, minprecip=8,
+                                    excluded_dates=[date(2011, 8, 21)],
+                                    groupby_col='season')
+
+    pdtest.assert_frame_equal(result_df, expected_df, check_less_precise=True)

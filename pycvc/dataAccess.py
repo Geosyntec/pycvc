@@ -693,7 +693,7 @@ class Site(object):
         return self._storm_info
 
     @np.deprecate
-    def storm_stats(self, minprecip=0, excluded_dates=None, groupby_col=None, **winsor_params):
+    def storm_stats(self, minprecip=0, excluded_dates=None, groupby_col=None, **winsor_params):  # pragma: no cover
         """ Statistics summarizing all the storm events
 
         Parameters
@@ -1002,7 +1002,7 @@ class Site(object):
         return sampledates
 
     @np.deprecate
-    def _wq_summary(self, rescol='concentration', sampletype='composite', excluded_dates=None, groupby_col=None):
+    def _wq_summary(self, rescol='concentration', sampletype='composite', excluded_dates=None, groupby_col=None):  # pragma: no cover
         """ Returns a dataframe of seasonal or overall water quality
         stats for the given sampletype.
         """
@@ -1060,7 +1060,7 @@ class Site(object):
         return all_data[columns].rename(columns=stat_labels)
 
     @np.deprecate
-    def wq_summary(self, rescol='concentration', sampletype='composite', excluded_dates=None, groupby_col=None):
+    def wq_summary(self, rescol='concentration', sampletype='composite', excluded_dates=None, groupby_col=None):  # pragma: no cover
         """ Basical water quality Statistics
 
         Parameters
@@ -1207,7 +1207,7 @@ class Site(object):
             # return notches(med, IQR, counts)
 
     @np.deprecate
-    def sampled_loads(self, sampletype='composite', excluded_dates=None, groupby_col=None, NAval=None):
+    def sampled_loads(self, sampletype='composite', excluded_dates=None, groupby_col=None, NAval=None):  # pragma: no cover
         """ Returns the total loads for sampled storms and the given
         sampletype.
 
@@ -1321,7 +1321,9 @@ class Site(object):
 
         return loads[final_cols_order].rename(columns=dict(zip(final_cols_order, final_cols)))
 
-    def _unsampled_loads(self, sampletype, excluded_dates, NAval=None):
+
+    @np.deprecate
+    def _unsampled_loads(self, sampletype, excluded_dates, NAval=None):  # pragma: no cover
         rename_cols = {
             'peak_precip_intensity': 'peak_precip_intensity_mm_per_hr',
             'total_precip_depth': 'total_precip_depth_mm',
@@ -1377,7 +1379,9 @@ class Site(object):
 
         return unsampled_loads
 
-    def unsampled_load_estimates(self,  sampletype='composite', excluded_dates=None, groupby_col=None, NAval=None):
+
+    @np.deprecate
+    def unsampled_load_estimates(self,  sampletype='composite', excluded_dates=None, groupby_col=None, NAval=None):  # pragma: no cover
         """ Returns the loading estimates for unsampled storms.
 
         Influent concentration values from the 95% confidence intervals
@@ -1430,7 +1434,7 @@ class Site(object):
         return unsampled_loads
 
     @np.deprecate
-    def prevalence_table(self, sampletype='composite'):
+    def prevalence_table(self, sampletype='composite'):  # pragma: no cover
         """ Returns a sample prevalence table for the given sample type.
         """
         sampletype = validate.sampletype(sampletype)
@@ -1446,7 +1450,7 @@ class Site(object):
         return pt
 
     @np.deprecate
-    def hydro_jointplot(self, xcol, ycol, conditions=None, one2one=True):
+    def hydro_jointplot(self, xcol, ycol, conditions=None, one2one=True):  # pragma: no cover
         """ Creates a joint distribution plot of two hydrologic
         quantities.
 
@@ -1494,7 +1498,7 @@ class Site(object):
         viz._savefig(jg.fig, figname, extra='HydroJointPlot')
 
     @np.deprecate
-    def hydro_pairplot(self, by='season', palette=None):
+    def hydro_pairplot(self, by='season', palette=None):  # pragma: no cover
         """ Creates a pairplot of hydrologic quantities.
 
         Parameters
@@ -1588,8 +1592,7 @@ class Site(object):
         viz._savefig(pg.fig, figname, extra='HydroPairPlot')
 
     @np.deprecate
-    def hydro_histogram(self, valuecol='total_precip_depth', bins=None,
-                        **factoropts):
+    def hydro_histogram(self, valuecol='total_precip_depth', bins=None, **factoropts):  # pragma: no cover
         """ Plot a faceted, categorical histogram of storms.
 
         valuecol : str, optional

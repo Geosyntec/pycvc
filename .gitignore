@@ -62,7 +62,7 @@ result_images/*
 .ipynb_checkpoints
 *.sublime-workspace
 __old
-
+scratch.ipynb
 
 # Visual Studio stuff #
 #######################

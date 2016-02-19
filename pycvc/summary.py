@@ -1322,7 +1322,7 @@ def load_reduction_pct(wq, groupby_col=None, **load_cols):
 
 
 @np.deprecate
-def write_load_reduction_range(reduction_df, site):
+def write_load_reduction_range(reduction_df, site):  # pragma: no cover
     final_cols = [
         'Total Suspended Solids',
         'Cadmium (Cd)',
@@ -1346,7 +1346,7 @@ def write_load_reduction_range(reduction_df, site):
 
 
 @np.deprecate
-def load_summary_table(wq):
+def load_summary_table(wq):  # pragma: no cover
     """ Produces a summary table of loads and confidence intervals for
     varying sample/event types (e.g., composite, unsampled w/ or w/o
     outflor) from tidy water quality data.
@@ -1494,9 +1494,202 @@ def storm_stats(hydro, minprecip=0, excluded_dates=None, groupby_col=None):
     return storm_stats
 
 
+def wq_summary(wq, rescol='concentration', sampletype='composite',
+               groupby_col=None):
+
+    """ Basic water quality Statistics
+
+    Parameters
+    ----------
+    rescol : string (default = 'concentration')
+        The result column to summaryize. Valid values are
+        "concentration" and "load_outflow".
+    sampletype : string (default = 'composite')
+        The types of samples to be summarized. Valid values are
+        "composite" and "grab".
+    groupby_col : string, optional
+        Optional string that defined how results should be group
+        temporally. Valid options are "season", "grouped_season",
+        and year. Default behavior does no temporal grouping.
+
+    Returns
+    -------
+    summary : pandas.DataFrame
+
+    """
+
+    rescol, unitscol = validate.rescol(rescol)
+    sampletype = validate.sampletype(sampletype)
+
+    by = ['site', 'parameter', unitscol]
+    if groupby_col is not None:
+        by.append(validate.groupby_col(groupby_col))
+
+    summary_percentiles = [0.1, 0.25, 0.5, 0.75, 0.9]
+
+    # detects and non-detects
+    all_data = (
+        wq.query("sampletype == @sampletype")
+            .groupby(by=by)[rescol]
+            .apply(lambda g: g.describe(percentiles=summary_percentiles))
+            .unstack(level=-1)
+    )
+
+    # count non-detects
+    if wq.query("sampletype == @sampletype and qualifier != '='").shape[0] > 0:
+        nd_data = (
+            wq.query("sampletype == @sampletype and qualifier != '='")
+                .groupby(by=by)[rescol]
+                .size()
+                .to_frame()
+                .rename(columns={0: 'count NDs'})
+        )
+
+        all_data = all_data.join(nd_data).fillna({'count NDs': 0})
+    else:
+        all_data['count NDs'] = 0
+
+    # compute the coefficient of variation
+    all_data['cov'] = all_data['std'] / all_data['mean']
+
+    # fancy column order
+    columns = [
+        'count', 'count NDs', 'mean', 'std', 'cov',
+        'min', '10%', '25%', '50%', '75%', '90%', 'max',
+    ]
+
+    # columns to rename
+    stat_labels = {
+        'count': 'Count',
+        'count NDs': 'Count of Non-detects',
+        'mean': 'Mean',
+        'std': 'Standard Deviation',
+        'cov': 'Coeff. of Variation',
+        'min': 'Minimum',
+        '10%': '10th Percentile',
+        '25%': '25th Percentile',
+        '50%': 'Median',
+        '75%': '75th Percentile',
+        '90%': '90th Percentile',
+        'max': 'Maximum',
+    }
+
+    return all_data[columns].rename(columns=stat_labels).reset_index()
+
+
+def load_totals(wq, groupby_col=None, NAval=0):
+    """ Returns the total loads for sampled storms and the given
+    sampletype.
+
+    Parameters
+    ----------
+    sampletype : string (default = 'composite')
+        The types of samples to be summarized. Valid values are
+        "composite" and "grab".
+    groupby_col : string, optional
+        Optional string that defined how results should be group
+        temporally. Valid options are "season", "grouped_season",
+        and year. Default behavior does no temporal grouping.
+    excluded_dates : list of date-likes, optional
+        This is a list of storm start dates that will be removed
+        from the storms dataframe prior to computing statistics.
+    NAval : float, optional
+        Default value with which NA (missing) loads will be filled.
+        If none, NAs will remain inplace.
+
+    Returns
+    -------
+    sampled_loads : pandas.DataFrame
+
+    """
+
+    by = ['site', 'parameter', 'sampletype', 'has_outflow', 'load_units']
+    if groupby_col is not None:
+        by.append(validate.groupby_col(groupby_col))
+
+    agg_dict = {
+        'units': 'first',
+        'load_units': 'first',
+        'load_runoff_lower': 'sum',
+        'load_runoff': 'sum',
+        'load_runoff_upper': 'sum',
+        'load_inflow_lower': 'sum',
+        'load_inflow': 'sum',
+        'load_inflow_upper': 'sum',
+        'load_bypass_lower': 'sum',
+        'load_bypass': 'sum',
+        'load_bypass_upper': 'sum',
+        'load_outflow_lower': 'sum',
+        'load_outflow': 'sum',
+        'load_outflow_upper': 'sum',
+    }
+
+    def total_reduction(df, incol, outcol):
+        return df[incol] - df[outcol]
+
+    def pct_reduction(df, redcol, incol):
+        return df[redcol] / df[incol] * 100.0
+
+    final_cols_order = [
+        'load_runoff_lower',
+        'load_runoff',
+        'load_runoff_upper',
+        'load_bypass_lower',
+        'load_bypass',
+        'load_bypass_upper',
+        'load_inflow_lower',
+        'load_inflow',
+        'load_inflow_upper',
+        'load_outflow_lower',
+        'load_outflow',
+        'load_outflow_upper',
+        'reduct_mass_lower',
+        'reduct_mass',
+        'reduct_mass_upper',
+        'reduct_pct_lower',
+        'reduct_pct',
+        'reduct_pct_upper',
+    ]
+
+    final_cols = [
+        'Runoff Load (lower bound)',
+        'Runoff Load',
+        'Runoff Load (upper bound',
+        'Bypass Load (lower bound)',
+        'Bypass Load',
+        'Bypass Load (upper bound',
+        'Estimated Total Influent Load (lower bound)',
+        'Estimated Total Influent Load',
+        'Estimated Total Influent Load (upper bound',
+        'Total Effluent Load (lower bound)',
+        'Total Effluent Load',
+        'Total Effluent Load (upper bound',
+        'Load Reduction Mass (lower bound)',
+        'Load Reduction Mass',
+        'Load Reduction Mass (upper bound)',
+        'Load Reduction Percent (lower bound)',
+        'Load Reduction Percent',
+        'Load Reduction Percent (upper bound)',
+    ]
+
+    loads = (
+        wq.groupby(by=by)
+            .agg(agg_dict)
+            .fillna(NAval)
+            .assign(reduct_mass_lower=lambda df: total_reduction(df, 'load_inflow_lower', 'load_outflow_upper'))
+            .assign(reduct_pct_lower=lambda df: pct_reduction(df, 'reduct_mass_lower', 'load_inflow_lower'))
+            .assign(reduct_mass=lambda df: total_reduction(df, 'load_inflow', 'load_outflow'))
+            .assign(reduct_pct=lambda df: pct_reduction(df, 'reduct_mass', 'load_inflow'))
+            .assign(reduct_mass_upper=lambda df: total_reduction(df, 'load_inflow_upper', 'load_outflow_lower'))
+            .assign(reduct_pct_upper=lambda df: pct_reduction(df, 'reduct_mass_upper', 'load_inflow_upper'))
+            .rename(columns=dict(zip(final_cols_order, final_cols)))
+    )[final_cols]
+
+    return loads.reset_index()
+
 
 @np.deprecate
-class SummaryAppendix(object):
+class SummaryAppendix(object):  # pragma: no cover
     def __init__(self, siteobjects, sampletype, parameterdict, paramgrouplist,
                  inputfilename, outputfilename, version='draft'):
         self.sites = siteobjects
@@ -1575,7 +1768,7 @@ class SummaryAppendix(object):
 
 
 @np.deprecate
-class WQSummaryByParameter(object):
+class WQSummaryByParameter(object):  # pragma: no cover
 
     def __init__(self, cvcdata, sampledate, parameter, resmedian):
         '''

@@ -1,6 +1,7 @@
 from io import StringIO
 from textwrap import dedent
 from datetime import date
+from pkg_resources import resource_filename
 
 import nose.tools as nt
 import numpy as np
@@ -11,8 +12,13 @@ import pandas.util.testing as pdtest
 from  pycvc import summary
 
 
+@nt.nottest
 def csv_string_as_df(csv_string, **opts):
     return pandas.read_csv(StringIO(dedent(csv_string)), **opts)
+
+@nt.nottest
+def load_test_data(filename, **opts):
+    return pandas.read_csv(resource_filename('pycvc.tests.testdata', filename), **opts)
 
 
 def test_classify_storms():
@@ -141,6 +147,7 @@ def test_load_reduction_pct():
                                             load_outflow_lower='B_lo',
                                             load_outflow_upper='B_hi')
 
+
 def test_storm_stats():
     input_df = csv_string_as_df("""\
     site,storm_number,year,season,grouped_season,antecedent_days,start_date,end_date,duration_hours,peak_precip_intensity,total_precip_depth,runoff_m3
@@ -173,3 +180,39 @@ def test_storm_stats():
                                     groupby_col='season')
 
     pdtest.assert_frame_equal(result_df, expected_df, check_less_precise=True)
+
+
+def test_wq_summary():
+    datecols = ['samplestart', 'samplestop', 'start_date', 'end_date']
+    input_df = load_test_data('test_wq.csv', parse_dates=datecols)
+
+    expected_none = load_test_data('wq_summary_by_nothing.csv')
+    expected_season = load_test_data('wq_summary_by_season.csv')
+
+    pdtest.assert_frame_equal(
+        summary.wq_summary(input_df),
+        expected_none
+    )
+
+    pdtest.assert_frame_equal(
+        summary.wq_summary(input_df, groupby_col='season'),
+        expected_season
+    )
+
+
+def test_load_totals():
+    datecols = ['samplestart', 'samplestop', 'start_date', 'end_date']
+    input_df = load_test_data('test_wq.csv', parse_dates=datecols)
+
+    expected_none = load_test_data('load_totals_by_nothing.csv')
+    expected_season = load_test_data('load_totals_by_season.csv')
+
+    pdtest.assert_frame_equal(
+        summary.load_totals(input_df),
+        expected_none
+    )
+
+    pdtest.assert_frame_equal(
+        summary.load_totals(input_df, groupby_col='season'),
+        expected_season
+    )

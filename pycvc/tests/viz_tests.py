@@ -16,6 +16,17 @@ def load_test_data(filename, **opts):
     return pandas.read_csv(resource_filename('pycvc.tests.testdata', filename), **opts)
 
 
+@image_comparison(baseline_images=['test_reduction_plot'], extensions=['png'])
+def test_reduction_plot():
+    red = load_test_data('test_reduction.csv')
+    red.sort_values(by=['site', 'parameter'])
+    fig = viz.reduction_plot(red, ['Cadmium (Cd)', 'Copper (Cu)'], 'parameter',
+                             'site', 'season', (0.55, 0.03),
+                             reduction='load_red',
+                             lower='load_red_lower',
+                             upper='load_red_upper')
+
+
 @image_comparison(
     baseline_images=[
         'test_hydro_pairplot_ED1_season',

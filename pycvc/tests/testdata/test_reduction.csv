@@ -1,0 +1,9 @@
+site,parameter,load_units,season,load_red,load_red_lower,load_red_upper,Count
+LV-2,Cadmium (Cd),g,autumn,10,0,20,20
+LV-2,Cadmium (Cd),g,summer,20,15,30,20
+LV-2,Copper (Cu),g,autumn,30,25,40,20
+LV-2,Copper (Cu),g,summer,40,35,50,20
+LV-4,Cadmium (Cd),g,autumn,50,45,60,20
+LV-4,Cadmium (Cd),g,summer,60,55,70,21
+LV-4,Copper (Cu),g,autumn,70,65,80,20
+LV-4,Copper (Cu),g,summer,80,75,100,21

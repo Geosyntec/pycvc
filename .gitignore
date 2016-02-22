@@ -54,7 +54,8 @@ Thumbs.db
 ###############
 .noseids
 .coverage
-result_images/*
+result_images
+examples/old
 
 # scratch files #
 #################
@@ -62,7 +63,7 @@ result_images/*
 .ipynb_checkpoints
 *.sublime-workspace
 __old
-
+scratch.ipynb
 
 # Visual Studio stuff #
 #######################

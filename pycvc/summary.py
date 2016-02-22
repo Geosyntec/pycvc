@@ -1,4 +1,6 @@
 import os
+import csv
+from functools import partial
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -16,6 +18,7 @@ from . import dataAccess
 from . import info
 from . import viz
 from .external import bmpcats_to_use
+from . import validate
 
 
 __all__ = [
@@ -49,7 +52,7 @@ class WQItem(object):
         self.siteid = self.site.siteid
 
         # sample type (grab or comp)
-        self.sampletype = dataAccess._check_sampletype(sampletype)
+        self.sampletype = validate.sampletype(sampletype)
         self.parametername = parametername
 
         # properties to be lazily-loaded when needed.
@@ -176,7 +179,7 @@ class WQComparison(object):
         self.NSites = len(siteobjects)
 
         # sample type (grab or comp)
-        self.sampletype = dataAccess._check_sampletype(sampletype)
+        self.sampletype = validate.sampletype(sampletype)
         self.parametername = parametername
         self.cvcparameter = parametername
 
@@ -1245,221 +1248,441 @@ class WQMegaFigure(object):
                                         load=load)
 
 
-@np.deprecate
-class SummaryAppendix(object):
-    def __init__(self, siteobjects, sampletype, parameterdict, paramgrouplist,
-                 inputfilename, outputfilename, version='draft'):
-        self.sites = siteobjects
-        self.sampletype = sampletype
-        self.parameterdict = parameterdict
-        self.paramgrouplist = paramgrouplist
-        self.version = version
-        self.inputfilename = inputfilename
-        self.outputfilename = outputfilename
-        self.templatefile = 'cvc/%s_appendix_template.tex' % version
+def collect_tidy_data(sites, fxn):
+    return pandas.concat([fxn(site) for site in sites], ignore_index=True)
 
-    def makeTexInputFile(self, refsource):
-        outputpath = os.path.join('cvc', 'output', 'tex', self.outputfilename)
-        outputfile = open(outputpath, 'w')
-        template = open(self.templatefile, 'r')
-        tempstr = template.read()
-        tempstr = tempstr.replace('__TEXFILE__', self.inputfilename)
-        outputfile.write(tempstr)
 
-        outputfile.close()
-        template.close()
+def classify_storms(df, valuecol, newcol='storm_bin', bins=None):
+    if bins is None:
+        bins = np.arange(5, 26, 5)
+    classifier = partial(utils.misc._classifier, bins=bins, units='mm')
+    cats = utils.misc._unique_categories(classifier, bins=bins)
+    df[newcol] = df[valuecol].apply(classifier).astype("category", categories=cats, ordered=True)
+    return df
 
-        inputpath = os.path.join('cvc', 'output', 'tex', self.inputfilename)
-        with open(inputpath, 'w') as texfile:
-            for site in self.sites:
-                texfile.write('\n\\section{%s Water Quantity Data}\n' % site.tocentry)
-                summarizeWaterQuantity(texfile, site, 'composite')
 
-                texfile.write(
-                    '\n\\section{%s Water Quality Data}\nNote: '
-                    'Estimated volumes are determined by a Simple '
-                    'Method transformation of precipitation data. '
-                    'Estimated loads assume the median concentration '
-                    'from the %s.' % (site.tocentry, refsource)
-                )
-                for group in dataAccess.groups:
-                    summarizeWaterQuality(texfile, site, 'composite', group)
+def prevalence_table(wq, rescol='concentration', groupby_col=None):
+    """ Returns a sample prevalence table for the given sample type.
+    """
+    by = ['site', 'parameter']
+    if groupby_col is not None:
+        by.append(validate.groupby_col(groupby_col))
 
-            texfile.write('\n\\section{Water Quality Performance Evaluation}')
+    pt = (
+        wq.query("sampletype == 'composite'")
+            .groupby(by=by)
+            .count()[rescol]
+            .unstack(level='parameter')
+            .reset_index()
+    )
+    return pt
 
-            # include landuse figures
-            landuse_section = 'Comparative Box Plots of Site and ' \
-                              'Reference Data Categorized by Land Use'
-            landuse_figtype = 'landuseBoxplots'
-            landuse_caption = '\\textbf{Comparative Box Plots of Effluent Concentrations from ' \
-                              'Site and Reference Data Categorized by Land Use }'
-            summarizeWQComps(texfile, self.sites[0], self.sampletype,
-                             landuse_section, landuse_figtype, landuse_caption)
 
-            # include bmptype figures
-            bmptype_section = 'Comparative Box Plots of Site and ' \
-                              'Reference Data Categorized by BMP Type'
-            bmptype_figtype = 'bmpBoxplot'
-            bmptype_caption = '\\textbf{Comparative Box Plots of Effluent Concentrations from ' \
-                              'Site and Reference Data Categorized by BMP Type }'
-            summarizeWQComps(texfile, self.sites[0], self.sampletype,
-                             bmptype_section, bmptype_figtype, bmptype_caption)
+def remove_load_data_from_storms(df, stormdates, datecol):
+    if np.isscalar(stormdates):
+        stormdates = [stormdates]
 
-            # include time series figures
-            ts_section = 'Time Series Plots of Water Quality ' \
-                         'Sampling Events of Site and Control Data'
-            ts_figtype = 'timeseries'
-            ts_caption = '\\textbf{Time Series Plots of Site and Control Effluent ' \
-                         'Concentrations from Sampling Events }'
-            summarizeWQComps(texfile, self.sites[0], self.sampletype,
-                             ts_section, ts_figtype, ts_caption)
+    cols_to_clean = df.select(lambda c: c.startswith('load_'), axis=1).columns
+    row_to_clean = df[datecol].dt.date.isin(stormdates)
+    df = df.copy()
+    df.loc[row_to_clean, cols_to_clean] = np.nan
+    return df
 
-            # include statplot figures
-            sp_section = 'Graphical Statistical Summary Plots of Site and ' \
-                         'Control Data'
-            sp_figtype = 'statplot'
-            sp_caption = '\\textbf{Box and Probability Plots of Site and Control Effluent Concentrations ' \
-                         'from Sampling Events }'
-            summarizeWQComps(texfile, self.sites[0], self.sampletype,
-                             sp_section, sp_figtype, sp_caption)
+
+def pct_reduction(df, incol, outcol):
+    return 100 * (df[incol] - df[outcol]) / df[incol]
+
+
+def load_reduction_pct(wq, groupby_col=None, **load_cols):
+    load_in = load_cols.pop('load_inflow', 'load_inflow')
+    load_out = load_cols.pop('load_outflow', 'load_outflow')
+    load_in_lower = load_cols.pop('load_inflow_lower', 'load_inflow_lower')
+    load_in_upper = load_cols.pop('load_inflow_upper', 'load_inflow_upper')
+    load_out_lower = load_cols.pop('load_outflow_lower', 'load_outflow_lower')
+    load_out_upper = load_cols.pop('load_outflow_upper', 'load_outflow_upper')
+
+    by = ['site', 'parameter', 'load_units']
+    if groupby_col is not None:
+        by.append(groupby_col)
+
+    red = (
+        wq.groupby(by=by)
+            .sum()
+            .assign(load_red=lambda df: pct_reduction(df, load_in, load_out))
+            .assign(load_red_lower=lambda df: pct_reduction(df, load_in_lower, load_out_upper))
+            .assign(load_red_upper=lambda df: pct_reduction(df, load_in_upper, load_out_lower))
+            .select(lambda c: c.startswith('load_red'), axis=1)
+            .join(wq.groupby(by=by).size().to_frame())
+            .rename(columns={0: 'Count'})
+            .dropna()
+            .reset_index()
+    )
+
+    return red
 
 
 @np.deprecate
-class WQSummaryByParameter(object):
+def write_load_reduction_range(reduction_df, site):  # pragma: no cover
+    final_cols = [
+        'Total Suspended Solids',
+        'Cadmium (Cd)',
+        'Copper (Cu)',
+        'Iron (Fe)',
+        'Lead (Pb)',
+        'Nickel (Ni)',
+        'Zinc (Zn)',
+        'Nitrate (N)',
+        'Orthophosphate (P)',
+        'Total Kjeldahl Nitrogen (TKN)',
+        'Total Phosphorus',
+    ]
+    reduction_df = (
+        reduction_df.applymap(lambda x: utils.sigFigs(x, n=2))
+        .apply(lambda r: '{} - {}'.format(r['load_red_lower'], r['load_red_upper']), axis=1)
+        .unstack(level='parameter')
+    )[final_cols]
 
-    def __init__(self, cvcdata, sampledate, parameter, resmedian):
-        '''
-        Object that represents the summary of the water quality results for a
-            single sample of a parameter at site.
+    reduction_df.xs(site, level='site').to_csv('{}_reduction.csv'.format(site), quoting=csv.QUOTE_ALL)
 
-        Input:
-            cvcdata (CVCData object) : the object representing in the entire
-                dataset
-            sampledate (pandas timestamp) : date and time the sample was
-                collected
-            parameter (string) : the parameter we're summarizing
 
-        Writes:
-            None
+@np.deprecate
+def load_summary_table(wq):  # pragma: no cover
+    """ Produces a summary table of loads and confidence intervals for
+    varying sample/event types (e.g., composite, unsampled w/ or w/o
+    outflor) from tidy water quality data.
+    """
+    def set_column_name(df):
+        df.columns.names = ['quantity']
+        return df
 
-        Atrributes
-            storm (Storm object) : object representing the summarized storm
-            parameter (string) : parameter being summarized
-            data (pandas DataFrame) : subset of water quality data for
-                sample date and parameter
-            conc (numpy array) : array of the concentration values
-            load (numpy array) : array of the pollutant loads
+    def formatter(row, location):
+        cols = 'load_{0};load_{0}_lower;load_{0}_upper'.format(location).split(';')
+        row_str = "{} ({}; {})".format(*row[cols])
+        return row_str
 
-        Methods (see docstrings):
-            bigTableLine
-        '''
-        # make the storm and save teh parameter as an attribute
-        self.siteid = cvcdata.siteid
-        storm_number, self.storm = cvcdata._get_storm_from_date(sampledate)
+    def drop_unit_index(df):
+        df = df.copy()
+        df.index = df.index.droplevel('units')
+        return df
 
-        self.parameter = parameter
+    def set_no_outlow_zero(df):
+        col = ('Effluent', 'unsampled', 'No')
+        df[col] = 0
+        return df
 
-        # subset data
-        self.sampledate = sampledate
-        self.data = cvcdata.wqdata.xs([sampledate, parameter],
-                                      level=['starttime', 'Parameter'])
-        std = cvcdata.wqstd.xs(parameter)
-        if std['guideline'] is not None and std['guideline'] != 'N/A':
-            self.std_conc = std['guideline']
-            if std['Units'] == 'ug/L':
-                self.std_units = '(' + r'\si[per-mode=symbol]{\micro\gram\per\liter}' + ')'
-            else:
-                self.std_units = '(' + std['Units'] + ')'
-        else:
-            self.std_conc = '--'
-            self.std_units = ''
+    def set_measured_effl(df):
+        col = ('Effluent', 'composite', 'Yes')
+        df[col] = df[col].apply(lambda x: str(x).split(' ')[0])
+        return df
 
-        # if there's any data, return some concentrations and loads
-        if self.data.shape[0] > 0:
-            if self.data.Outflow_unit.values[0] == 'ug/L':
-                self.conc_units = r'\si[per-mode=symbol]{\micro\gram\per\liter}'
-            else:
-                self.conc_units = self.data.Outflow_unit.values[0]
+    def swal_col_levels(df, ii, jj):
+        df.columns = df.columns.swaplevel(ii, jj)
+        return df
 
-            self.conc = self.data.Outflow_res.values[0]
-            unit_conversion = units_map[self.data.Outflow_unit.values[0]]
+    def pct_reduction(df, incol, outcol):
+        return 100 * (df[incol] - df[outcol]) / df[incol]
 
-            if self.storm is not None:
-                self.load_units = load_units[self.parameter]
-                self.load = self.conc * self.storm.total_volume * unit_conversion
-                self.infload = resmedian * self.storm.influent_volume * unit_conversion
-            else:
-                self.load = None
-                self.load_units = None
-                self.infload = None
 
-        # `None` otherwise
-        else:
-            self.conc = None
-            self.conc_units = None
-            self.load = None
-            self.load_units = None
-            self.infload = None
+    final_cols = [
+        ('Influent', 'unsampled', 'No'), ('Effluent', 'unsampled', 'No'),
+        ('Influent', 'unsampled', 'Yes'), ('Effluent', 'unsampled', 'Yes'),
+        ('Influent', 'composite', 'Yes'), ('Effluent', 'composite', 'Yes'),
+        'Reduction'
+    ]
 
-    def bigTableLine(self):
-        '''
-        Creates a line to the big table summarizing WQ data for a storm.
+    final_params = [
+        'Nitrate + Nitrite', 'Nitrate (N)', 'Orthophosphate (P)',
+        'Cadmium (Cd)', 'Copper (Cu)', 'Iron (Fe)',
+        'Total Kjeldahl Nitrogen (TKN)', 'Lead (Pb)',
+        'Nickel (Ni)', 'Total Phosphorus',
+        'Total Suspended Solids', 'Zinc (Zn)',
+    ]
 
-        Input:
-            None
+    loads = (
+        wq.groupby(by=['parameter', 'units', 'has_outflow', 'sampletype'])
+          .sum()
+          .pipe(set_column_name)
+          .select(lambda c: c.startswith('load_inflow') or c.startswith('load_outflow'), axis=1)
+          .unstack(level='has_outflow')
+          .pipe(swal_col_levels, 'has_outflow', 'quantity')
+          .stack(level='has_outflow')
+          .dropna()
+          .pipe(drop_unit_index)
+    )
 
-        Writes:
-            None
+    main = (
+        loads.applymap(lambda x: utils.sigFigs(x, n=3, expthresh=7))
+          .assign(Influent=lambda df: df.apply(formatter, args=('inflow',), axis=1))
+          .assign(Effluent=lambda df: df.apply(formatter, args=('outflow',), axis=1))
+          .unstack(level='sampletype')
+          .unstack(level='has_outflow')
+          [['Influent', 'Effluent']]
+          .dropna(how='all', axis=1)
+    )
 
-        Returns
-            txt (string) : CSV string for a single row in the larger summary
-                table
-        '''
-        effconc = utils.stringify(self.conc, '%s')
-        precip = utils.stringify(self.storm, '%s', attribute='total_precip')
-        infvol = utils.stringify(self.storm, '%s', attribute='influent_volume')
-        effvol = utils.stringify(self.storm, '%s', attribute='total_volume')
-        infload = utils.stringify(self.infload, '%s')
-        effload = utils.stringify(self.load, '%s')
+    reduction = (
+        loads.groupby(level='parameter').sum()
+             .assign(load_red=lambda df: pct_reduction(df, 'load_inflow', 'load_outflow'))
+             .assign(load_red_upper=lambda df: pct_reduction(df, 'load_inflow_upper', 'load_outflow_lower'))
+             .assign(load_red_lower=lambda df: pct_reduction(df, 'load_inflow_lower', 'load_outflow_upper'))
+             .applymap(lambda x: utils.sigFigs(x, n=3, expthresh=7))
+             .assign(Reduction=lambda df: df.apply(formatter, args=('red',), axis=1))
+    )
 
-        if self.infload is not None and self.load is not None:
-            loadreduction = self.infload - self.load
-            loadreduction_percent = 100.0 * loadreduction / self.infload
-        else:
-            loadreduction = '--'
-            loadreduction_percent = '--'
+    summary = (
+        main.join(reduction)
+            .loc[final_params, final_cols]
+            .pipe(set_no_outlow_zero)
+            .pipe(set_measured_effl)
+    )
 
-        if self.siteid != 'LV-1':
-                  #'"Total Estimated\\footnotemark[1] Influent Volume (L)",' \
-                  #'"Total Estimated\\footnotemark[1]\\footnotemark[2] Influent Load (%s)",' \
-                  #'"Estimated\\footnotemark[1]\\footnotemark[2] Pollutant Load Reduction (%s)",' \
-                  #'"Estimated\\footnotemark[1]\\footnotemark[2] Pollutant Load Reduction (%%)"\n' % \
-            header = '"Date",' \
-                '"Effluent EMC (%s)",' \
-                '"Total Precipitation (mm)",' \
-                '"Total Estimated Influent Volume (L)",' \
-                '"Total Effluent Volume (L)",' \
-                '"Total Estimated Influent Load (%s)",' \
-                '"Total Effluent Load (%s)",' \
-                '"Estimated Pollutant Load Reduction (%s)",' \
-                '"Estimated Pollutant Load Reduction (%%)"\n' % \
-                (self.conc_units, self.load_units, self.load_units, self.load_units)
+    return summary
 
-            txt = '%s,%s,%s,%s,%s,%s,%s,%s,%s' % \
-                (self.sampledate, effconc, precip, infvol, effvol, infload,
-                    effload, loadreduction, loadreduction_percent)
 
-        else:
-                  #'"Total Estimated\\footnotemark[1] Effluent Volume (L)",' \
-                  #'"Total Estimated\\footnotemark[1]\\footnotemark[2] Effluent Load (%s)"\n'  % \
-            header = '"Date",' \
-                '"Effluent EMC (%s)",' \
-                '"Total Precipitation (mm)",' \
-                '"Total Estimated Effluent Volume (L)",' \
-                '"Total Estimated Effluent Load (%s)"\n' % \
-                (self.conc_units, self.load_units)
+def storm_stats(hydro, minprecip=0, excluded_dates=None, groupby_col=None):
+    """ Statistics summarizing all the storm events
 
-            txt = '%s,%s,%s,%s,%s' % \
-                (self.sampledate, effconc, precip, infvol, infload)
+    Parameters
+    ----------
+    minprecip : float (default = 0)
+        The minimum amount of precipitation required to for a storm
+        to be included. Using 0 (the default) will likely include
+        some pure snowmelt events.
+    excluded_dates : list of date-likes, optional
+        This is a list of storm start dates that will be removed
+        from the storms dataframe prior to computing statistics.
+    groupby_col : string, optional
+        Optional string that defined how results should be group
+        temporally. Valid options are "season", "grouped_season",
+        and year. Default behavior does no temporal grouping.
+    **winsor_params : optional keyword arguments
+        Dictionary of column names (from `Site.storm_info`) and
+        percetiles at which those columns should be winsorized.
 
-        return txt, header
+    Returns
+    -------
+    summary : pandas.DataFrame
+
+    See also
+    --------
+    pycvc.Site.storm_info
+    wqio.units.winsorize_dataframe
+    scipy.stats.mstats.winsorize
+
+    """
+
+    timecol = validate.groupby_col(groupby_col)
+
+    by = ['site']
+    if groupby_col is not None:
+        by.append(validate.groupby_col(groupby_col))
+
+    data = (
+        hydro.pipe(dataAccess._remove_storms_from_df, excluded_dates, 'start_date')
+            .query("total_precip_depth > @minprecip")
+    )
+
+    descr = data.groupby(by=by).describe()
+    descr.index.names = by + ['stat']
+    descr = descr.select(lambda c: c != 'storm_number', axis=1)
+    descr.columns.names = ['quantity']
+    storm_stats = (
+        descr.stack(level='quantity')
+             .unstack(level='stat')
+             .reset_index()
+    )
+    return storm_stats
+
+
+def wq_summary(wq, rescol='concentration', sampletype='composite',
+               groupby_col=None):
+
+    """ Basic water quality Statistics
+
+    Parameters
+    ----------
+    rescol : string (default = 'concentration')
+        The result column to summaryize. Valid values are
+        "concentration" and "load_outflow".
+    sampletype : string (default = 'composite')
+        The types of samples to be summarized. Valid values are
+        "composite" and "grab".
+    groupby_col : string, optional
+        Optional string that defined how results should be group
+        temporally. Valid options are "season", "grouped_season",
+        and year. Default behavior does no temporal grouping.
+
+    Returns
+    -------
+    summary : pandas.DataFrame
+
+    """
+
+    rescol, unitscol = validate.rescol(rescol)
+    sampletype = validate.sampletype(sampletype)
+
+    by = ['site', 'parameter', unitscol]
+    if groupby_col is not None:
+        by.append(validate.groupby_col(groupby_col))
+
+    summary_percentiles = [0.1, 0.25, 0.5, 0.75, 0.9]
+
+    # detects and non-detects
+    all_data = (
+        wq.query("sampletype == @sampletype")
+            .groupby(by=by)[rescol]
+            .apply(lambda g: g.describe(percentiles=summary_percentiles))
+            .unstack(level=-1)
+    )
+
+    # count non-detects
+    if wq.query("sampletype == @sampletype and qualifier != '='").shape[0] > 0:
+        nd_data = (
+            wq.query("sampletype == @sampletype and qualifier != '='")
+                .groupby(by=by)[rescol]
+                .size()
+                .to_frame()
+                .rename(columns={0: 'count NDs'})
+        )
+
+        all_data = all_data.join(nd_data).fillna({'count NDs': 0})
+    else:
+        all_data['count NDs'] = 0
+
+    # compute the coefficient of variation
+    all_data['cov'] = all_data['std'] / all_data['mean']
+
+    # fancy column order
+    columns = [
+        'count', 'count NDs', 'mean', 'std', 'cov',
+        'min', '10%', '25%', '50%', '75%', '90%', 'max',
+    ]
+
+    # columns to rename
+    stat_labels = {
+        'count': 'Count',
+        'count NDs': 'Count of Non-detects',
+        'mean': 'Mean',
+        'std': 'Standard Deviation',
+        'cov': 'Coeff. of Variation',
+        'min': 'Minimum',
+        '10%': '10th Percentile',
+        '25%': '25th Percentile',
+        '50%': 'Median',
+        '75%': '75th Percentile',
+        '90%': '90th Percentile',
+        'max': 'Maximum',
+    }
+
+    return all_data[columns].rename(columns=stat_labels).reset_index()
+
+
+def load_totals(wq, groupby_col=None, NAval=0):
+    """ Returns the total loads for sampled storms and the given
+    sampletype.
+
+    Parameters
+    ----------
+    sampletype : string (default = 'composite')
+        The types of samples to be summarized. Valid values are
+        "composite" and "grab".
+    groupby_col : string, optional
+        Optional string that defined how results should be group
+        temporally. Valid options are "season", "grouped_season",
+        and year. Default behavior does no temporal grouping.
+    excluded_dates : list of date-likes, optional
+        This is a list of storm start dates that will be removed
+        from the storms dataframe prior to computing statistics.
+    NAval : float, optional
+        Default value with which NA (missing) loads will be filled.
+        If none, NAs will remain inplace.
+
+    Returns
+    -------
+    sampled_loads : pandas.DataFrame
+
+    """
+
+    by = ['site', 'parameter', 'sampletype', 'has_outflow', 'load_units']
+    if groupby_col is not None:
+        by.append(validate.groupby_col(groupby_col))
+
+    agg_dict = {
+        'units': 'first',
+        'load_units': 'first',
+        'load_runoff_lower': 'sum',
+        'load_runoff': 'sum',
+        'load_runoff_upper': 'sum',
+        'load_inflow_lower': 'sum',
+        'load_inflow': 'sum',
+        'load_inflow_upper': 'sum',
+        'load_bypass_lower': 'sum',
+        'load_bypass': 'sum',
+        'load_bypass_upper': 'sum',
+        'load_outflow_lower': 'sum',
+        'load_outflow': 'sum',
+        'load_outflow_upper': 'sum',
+    }
+
+    def total_reduction(df, incol, outcol):
+        return df[incol] - df[outcol]
+
+    def pct_reduction(df, redcol, incol):
+        return df[redcol] / df[incol] * 100.0
+
+    final_cols_order = [
+        'load_runoff_lower',
+        'load_runoff',
+        'load_runoff_upper',
+        'load_bypass_lower',
+        'load_bypass',
+        'load_bypass_upper',
+        'load_inflow_lower',
+        'load_inflow',
+        'load_inflow_upper',
+        'load_outflow_lower',
+        'load_outflow',
+        'load_outflow_upper',
+        'reduct_mass_lower',
+        'reduct_mass',
+        'reduct_mass_upper',
+        'reduct_pct_lower',
+        'reduct_pct',
+        'reduct_pct_upper',
+    ]
+
+    final_cols = [
+        'Runoff Load (lower bound)',
+        'Runoff Load',
+        'Runoff Load (upper bound',
+        'Bypass Load (lower bound)',
+        'Bypass Load',
+        'Bypass Load (upper bound',
+        'Estimated Total Influent Load (lower bound)',
+        'Estimated Total Influent Load',
+        'Estimated Total Influent Load (upper bound',
+        'Total Effluent Load (lower bound)',
+        'Total Effluent Load',
+        'Total Effluent Load (upper bound',
+        'Load Reduction Mass (lower bound)',
+        'Load Reduction Mass',
+        'Load Reduction Mass (upper bound)',
+        'Load Reduction Percent (lower bound)',
+        'Load Reduction Percent',
+        'Load Reduction Percent (upper bound)',
+    ]
+
+    loads = (
+        wq.groupby(by=by)
+            .agg(agg_dict)
+            .fillna(NAval)
+            .assign(reduct_mass_lower=lambda df: total_reduction(df, 'load_inflow_lower', 'load_outflow_upper'))
+            .assign(reduct_pct_lower=lambda df: pct_reduction(df, 'reduct_mass_lower', 'load_inflow_lower'))
+            .assign(reduct_mass=lambda df: total_reduction(df, 'load_inflow', 'load_outflow'))
+            .assign(reduct_pct=lambda df: pct_reduction(df, 'reduct_mass', 'load_inflow'))
+            .assign(reduct_mass_upper=lambda df: total_reduction(df, 'load_inflow_upper', 'load_outflow_lower'))
+            .assign(reduct_pct_upper=lambda df: pct_reduction(df, 'reduct_mass_upper', 'load_inflow_upper'))
+            .rename(columns=dict(zip(final_cols_order, final_cols)))
+    )[final_cols]
+
+    return loads.reset_index()

@@ -124,3 +124,25 @@ def test_hydro_jointplot():
         color='g',
         save=False
     )
+
+
+@image_comparison(baseline_images=['test_external_boxplot'], extensions=['png'])
+def test_external_boxplot():
+    tidy = load_test_data('external_tidy.csv')
+    bmps = [
+        'Bioretention', 'Detention Basin',
+        'Manufactured Device', 'Retention Pond',
+        'Wetland Channel',
+    ]
+    sites = ['ED-1', 'LV-1', 'LV-2', 'LV-4']
+    params = ['Cadmium (Cd)', 'Copper (Cu)', 'Lead (Pb)', 'Zinc (Zn)']
+    fg = viz.external_boxplot(tidy, categories=bmps, sites=sites, params=params,
+                              units='ug/L')
+
+
+@image_comparison(baseline_images=['test_seasonal_boxplot'], extensions=['png'])
+def test_seasonal_boxplot():
+    tidy = load_test_data('test_wq.csv')
+    sites = ['ED-1', 'LV-1', 'LV-2', 'LV-4']
+    params = ['Cadmium (Cd)', 'Total Suspended Solids']
+    fg = viz.seasonal_boxplot(tidy, 'concentration', params=params, units='ug/L')

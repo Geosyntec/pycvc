@@ -306,3 +306,37 @@ def hydro_jointplot(hydro, site, xcol, ycol, sitecol='site',
     if save:
         figname = '{}-HydroJoinPlot_{}_vs_{}'.format(site, xcol, ycol)
         _savefig(jg.fig, figname, extra='HydroJointPlot')
+
+
+def external_boxplot(tidy, sites=None, categories=None, params=None,
+                     units=None, palette=None):
+
+    x_vals = np.hstack([sites, categories])
+
+    subset = (
+        tidy.query("site in @x_vals")
+            .query("parameter in @params")
+    )
+    fg = seaborn.factorplot(
+        data=subset, x='site', y='concentration',
+        col='parameter', col_wrap=2, col_order=params,
+        kind='box', aspect=2, size=3, order=x_vals,
+        palette=palette, sharey=False, notch=False
+    )
+
+    xlabels = list(map(lambda c: c.replace(' ', '\n'), x_vals))
+    _format_facetgrid(fg, units, xlabels=xlabels)
+    return fg
+
+
+def seasonal_boxplot(wq, ycol, params, units):
+    fg = seaborn.factorplot(
+        data=wq.query('parameter in @params'), x='site', y='concentration',
+        col='parameter', col_wrap=2, col_order=params,
+        hue='season', hue_order=['winter', 'spring', 'summer', 'autumn'],
+        kind='box', palette='BrBG_r', aspect=2, size=3, sharey=False
+    )
+    _format_facetgrid(fg, units)
+    return fg
+
+

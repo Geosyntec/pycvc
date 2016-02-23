@@ -1254,10 +1254,10 @@ def collect_tidy_data(sites, fxn):
 
 def classify_storms(df, valuecol, newcol='storm_bin', bins=None):
     if bins is None:
-        bins = np.arange(5, 26, 5)
-    classifier = partial(utils.misc._classifier, bins=bins, units='mm')
-    cats = utils.misc._unique_categories(classifier, bins=bins)
-    df[newcol] = df[valuecol].apply(classifier).astype("category", categories=cats, ordered=True)
+        bins = [0, 5, 10, 15, 20, 25, np.inf]
+
+    labels = labels_from_bins(bins=bins, units='mm')
+    df[newcol] = pandas.cut(df[valuecol], bins=bins, labels=labels)
     return df
 
 
@@ -1278,19 +1278,19 @@ def prevalence_table(wq, rescol='concentration', groupby_col=None):
     return pt
 
 
-def remove_load_data_from_storms(df, stormdates, datecol):
+def remove_load_data_from_storms(wq, stormdates, datecol):
     if np.isscalar(stormdates):
         stormdates = [stormdates]
 
-    cols_to_clean = df.select(lambda c: c.startswith('load_'), axis=1).columns
-    row_to_clean = df[datecol].dt.date.isin(stormdates)
-    df = df.copy()
-    df.loc[row_to_clean, cols_to_clean] = np.nan
-    return df
+    cols_to_clean = wq.select(lambda c: c.startswith('load_'), axis=1).columns
+    row_to_clean = wq[datecol].dt.date.isin(stormdates)
+    wq = wq.copy()
+    wq.loc[row_to_clean, cols_to_clean] = np.nan
+    return wq
 
 
-def pct_reduction(df, incol, outcol):
-    return 100 * (df[incol] - df[outcol]) / df[incol]
+def pct_reduction(wq, incol, outcol):
+    return 100 * (wq[incol] - wq[outcol]) / wq[incol]
 
 
 def load_reduction_pct(wq, groupby_col=None, **load_cols):

@@ -1,14 +1,52 @@
 from functools import partial
 from pkg_resources import resource_filename
+import os
 
 import numpy as np
 import pandas
 
+from unittest import mock
 import nose.tools as nt
-from matplotlib.testing.decorators import image_comparison
+import matplotlib
+matplotlib.use('agg')
+from matplotlib import pyplot
+from matplotlib.testing.decorators import image_comparison, cleanup
 import seaborn
 
 from pycvc import viz
+
+
+class Test_savefig(object):
+    def setup(self):
+        self.fig = pyplot.Figure()
+
+    @cleanup
+    def teardown(self):
+        pyplot.close(self.fig)
+
+    def test_png(self):
+        with mock.patch.object(self.fig, 'savefig') as _save:
+            viz.savefig(self.fig, 'test_png')
+            _save.assert_called_once_with(
+                os.path.join('output', 'img', 'test_png.png'),
+                dpi=300, transparent=True, bbox_inches='tight'
+            )
+
+    def test_pdf(self):
+        with mock.patch.object(self.fig, 'savefig') as _save:
+            viz.savefig(self.fig, 'test_pdf', asPNG=False, asPDF=True)
+            _save.assert_called_once_with(
+                os.path.join('output', 'img', 'test_pdf.pdf'),
+                dpi=300, transparent=True, bbox_inches='tight'
+            )
+
+    def test_extra_load(self):
+        with mock.patch.object(self.fig, 'savefig') as _save:
+            viz.savefig(self.fig, 'test_extra', extra='subdir', load=True)
+            _save.assert_called_once_with(
+                os.path.join('output', 'img', 'subdir', 'test_extra-load.png'),
+                dpi=300, transparent=True, bbox_inches='tight'
+            )
 
 
 @nt.nottest

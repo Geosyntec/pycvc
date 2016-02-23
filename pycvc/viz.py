@@ -7,8 +7,9 @@ import seaborn.apionly as seaborn
 from wqio import utils
 
 
-def _savefig(fig, figname, extra=None, asPNG=True, asPDF=False, load=False):
-    """ Helper function to effectively save a figure.
+def savefig(fig, figname, extra=None, asPNG=True, asPDF=False, load=False):
+    """
+    Helper function to effectively save a figure.
 
     Parameters
     ----------
@@ -37,15 +38,17 @@ def _savefig(fig, figname, extra=None, asPNG=True, asPDF=False, load=False):
 
     if load:
         figname += '-load'
+
     figpath = os.path.join('output', 'img')
     if extra is not None:
         figpath = os.path.join(figpath, extra)
 
     figpathname = os.path.join(figpath, figname)
-
     figopts = dict(dpi=300, transparent=True, bbox_inches='tight')
+
     if asPNG:
         fig.savefig(figpathname + '.png', **figopts)
+
     if asPDF:
         fig.savefig(figpathname + '.pdf', **figopts)
     plt.close(fig)

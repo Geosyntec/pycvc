@@ -7,7 +7,6 @@ import numpy as np
 from scipy import interpolate
 import pandas
 import pyodbc
-import seaborn.apionly as seaborn
 
 import wqio
 from wqio import utils

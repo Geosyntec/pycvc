@@ -12,7 +12,6 @@ matplotlib.rcParams['backend'] = 'agg'
 
 from matplotlib import pyplot
 from matplotlib.testing.decorators import image_comparison, cleanup
-import seaborn
 
 from pycvc import viz
 

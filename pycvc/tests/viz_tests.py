@@ -8,7 +8,8 @@ import pandas
 from unittest import mock
 import nose.tools as nt
 import matplotlib
-matplotlib.use('agg')
+matplotlib.rcParams['backend'] = 'agg'
+
 from matplotlib import pyplot
 from matplotlib.testing.decorators import image_comparison, cleanup
 import seaborn
@@ -143,6 +144,31 @@ def test_external_boxplot():
 @image_comparison(baseline_images=['test_seasonal_boxplot'], extensions=['png'])
 def test_seasonal_boxplot():
     tidy = load_test_data('test_wq.csv')
-    sites = ['ED-1', 'LV-1', 'LV-2', 'LV-4']
     params = ['Cadmium (Cd)', 'Total Suspended Solids']
     fg = viz.seasonal_boxplot(tidy, 'concentration', params=params, units='ug/L')
+
+
+@image_comparison(baseline_images=['test_ts_plot'], extensions=['png'])
+def test_ts_plot():
+    tidy = load_test_data('test_wq.csv', parse_dates=['samplestart', 'samplestop'])
+    plot_opts = dict(
+        sites=['ED-1', 'LV-2'],
+        params=['Cadmium (Cd)', 'Total Suspended Solids'],
+        units='mass/volume',
+        palette=None,
+        markers=['s', '>'],
+    )
+    viz.ts_plot(tidy, 'samplestart', 'concentration', **plot_opts)
+
+
+@image_comparison(baseline_images=['test_prob_plot'], extensions=['png'])
+def test_prob_plot():
+    tidy = load_test_data('test_wq.csv')
+    plot_opts = dict(
+        sites=['ED-1', 'LV-2'],
+        params=['Cadmium (Cd)', 'Total Suspended Solids'],
+        units='mass/volume',
+        palette=None,
+        markers=['s', '>'],
+    )
+    viz.prob_plot(tidy, 'concentration', **plot_opts)

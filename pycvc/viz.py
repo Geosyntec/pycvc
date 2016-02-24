@@ -3,7 +3,9 @@ import pdb
 
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy import stats
 import seaborn.apionly as seaborn
+
 from wqio import utils
 
 
@@ -340,3 +342,47 @@ def seasonal_boxplot(wq, ycol, params, units):
     return fg
 
 
+def ts_plot(wq, datecol, ycol, sites, params, units, palette, markers):
+    subset = wq.query("site in @sites and parameter in @params").dropna(subset=[ycol])
+    fg = seaborn.FacetGrid(
+        subset, aspect=2, size=3, sharey=False,
+        col_order=params, col='parameter', col_wrap=2,
+        hue='site', hue_kws=dict(marker=markers),
+        palette=palette,
+    ).map(plt.scatter, 'samplestart', ycol).add_legend()
+    fg = _format_facetgrid(fg, units)
+    return fg
+
+
+def prob_plot(wq, ycol, sites, params, units, palette, markers):
+    def _pp(x, **kwargs):
+        ax = plt.gca()
+        qntls, xr = stats.probplot(x, fit=False)
+        probs = stats.norm.cdf(qntls) * 100
+        ax.scatter(probs, xr, **kwargs)
+        ax.set_xlim(left=0.5, right=99.5)
+        ax.set_xscale('prob')
+
+    subset = wq.query("site in @sites and parameter in @params").dropna(subset=[ycol])
+    fg = seaborn.FacetGrid(
+        subset, aspect=2, size=3, sharey=False,
+        col_order=params, col='parameter', col_wrap=2,
+        hue='site', hue_kws=dict(marker=markers),
+        palette=palette,
+    ).map(_pp, ycol).add_legend()
+    fg = _format_facetgrid(fg, units)
+    fg.set_xlabels('Probability')
+    return fg
+
+
+def _format_facetgrid(fg, units, xlabels=None):
+    fg.set_xticklabels(
+        labels=xlabels,
+        rotation=30,
+        rotation_mode='anchor',
+        horizontalalignment='right'
+    )
+    fg.set(yscale='log')
+    fg.set_xlabels('')
+    fg.set_axis_labels(x_var='', y_var='Concentration ({})'.format(units))
+    return fg

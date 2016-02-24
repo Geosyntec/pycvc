@@ -238,5 +238,17 @@ class bmpdb(_external_source):
         return bmpparam
 
 
-def loadExternalData(colors, markers):
-    return _nsqd(colors[0], markers[0]), _bmpdb(colors[1], markers[1])
+def combine_wq(wq, external, external_site_col):
+    final_cols = [
+        'parameter',
+        'units',
+        'site',
+        'concentration',
+    ]
+    exttidy = (
+        external.datacollection.tidy
+            .rename(columns={external_site_col: 'site', 'ros_res': 'concentration'})
+    )[final_cols]
+
+    tidy = pandas.concat([wq[final_cols], exttidy])
+    return tidy

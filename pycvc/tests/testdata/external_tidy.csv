@@ -1,0 +1,896 @@
+parameter,site,units,concentration
+Aluminum (Al),ED-1,ug/L,786.0
+Aluminum (Al),ED-1,ug/L,229.0
+Aluminum (Al),ED-1,ug/L,286.0
+Aluminum (Al),ED-1,ug/L,338.0
+Aluminum (Al),ED-1,ug/L,516.0
+Aluminum (Al),ED-1,ug/L,974.0
+Aluminum (Al),ED-1,ug/L,220.0
+Aluminum (Al),ED-1,ug/L,307.0
+Aluminum (Al),ED-1,ug/L,2150.0
+Aluminum (Al),ED-1,ug/L,291.0
+Aluminum (Al),LV-1,ug/L,565.0
+Aluminum (Al),LV-1,ug/L,561.0
+Aluminum (Al),LV-1,ug/L,291.0
+Aluminum (Al),LV-1,ug/L,279.0
+Aluminum (Al),LV-1,ug/L,481.0
+Aluminum (Al),LV-1,ug/L,278.0
+Aluminum (Al),LV-1,ug/L,87.8
+Aluminum (Al),LV-1,ug/L,163.0
+Aluminum (Al),LV-1,ug/L,385.0
+Aluminum (Al),LV-1,ug/L,443.0
+Aluminum (Al),LV-2,ug/L,577.0
+Aluminum (Al),LV-2,ug/L,449.0
+Aluminum (Al),LV-2,ug/L,247.0
+Aluminum (Al),LV-2,ug/L,193.0
+Aluminum (Al),LV-2,ug/L,375.0
+Aluminum (Al),LV-2,ug/L,333.0
+Aluminum (Al),LV-2,ug/L,370.0
+Aluminum (Al),LV-2,ug/L,252.0
+Aluminum (Al),LV-2,ug/L,337.0
+Aluminum (Al),LV-2,ug/L,2300.0
+Aluminum (Al),LV-4,ug/L,389.0
+Aluminum (Al),LV-4,ug/L,396.0
+Aluminum (Al),LV-4,ug/L,467.0
+Aluminum (Al),LV-4,ug/L,151.0
+Aluminum (Al),LV-4,ug/L,338.0
+Aluminum (Al),LV-4,ug/L,170.0
+Aluminum (Al),LV-4,ug/L,101.0
+Aluminum (Al),LV-4,ug/L,232.0
+Aluminum (Al),LV-4,ug/L,126.0
+Aluminum (Al),LV-4,ug/L,80.0
+Cadmium (Cd),ED-1,ug/L,0.16
+Cadmium (Cd),ED-1,ug/L,0.09
+Cadmium (Cd),ED-1,ug/L,0.05
+Cadmium (Cd),ED-1,ug/L,0.1
+Cadmium (Cd),ED-1,ug/L,0.2
+Cadmium (Cd),ED-1,ug/L,0.42
+Cadmium (Cd),ED-1,ug/L,0.23
+Cadmium (Cd),ED-1,ug/L,0.11
+Cadmium (Cd),ED-1,ug/L,0.31
+Cadmium (Cd),ED-1,ug/L,0.37
+Cadmium (Cd),LV-1,ug/L,0.5
+Cadmium (Cd),LV-1,ug/L,0.72
+Cadmium (Cd),LV-1,ug/L,0.17
+Cadmium (Cd),LV-1,ug/L,0.47
+Cadmium (Cd),LV-1,ug/L,0.34
+Cadmium (Cd),LV-1,ug/L,0.37
+Cadmium (Cd),LV-1,ug/L,0.15
+Cadmium (Cd),LV-1,ug/L,0.15
+Cadmium (Cd),LV-1,ug/L,0.29
+Cadmium (Cd),LV-1,ug/L,0.48
+Cadmium (Cd),LV-2,ug/L,0.42
+Cadmium (Cd),LV-2,ug/L,0.23
+Cadmium (Cd),LV-2,ug/L,0.2
+Cadmium (Cd),LV-2,ug/L,0.09
+Cadmium (Cd),LV-2,ug/L,0.17
+Cadmium (Cd),LV-2,ug/L,0.52
+Cadmium (Cd),LV-2,ug/L,0.16
+Cadmium (Cd),LV-2,ug/L,0.14
+Cadmium (Cd),LV-2,ug/L,0.26
+Cadmium (Cd),LV-2,ug/L,0.18
+Cadmium (Cd),LV-4,ug/L,0.14
+Cadmium (Cd),LV-4,ug/L,0.12
+Cadmium (Cd),LV-4,ug/L,0.14
+Cadmium (Cd),LV-4,ug/L,0.12
+Cadmium (Cd),LV-4,ug/L,0.33
+Cadmium (Cd),LV-4,ug/L,0.15
+Cadmium (Cd),LV-4,ug/L,0.1
+Cadmium (Cd),LV-4,ug/L,0.13
+Cadmium (Cd),LV-4,ug/L,0.12
+Cadmium (Cd),LV-4,ug/L,0.08
+Cadmium (Cd),Manufactured Device,ug/L,0.0068359674513977465
+Cadmium (Cd),Manufactured Device,ug/L,0.013472912587759052
+Cadmium (Cd),Manufactured Device,ug/L,0.013472912587759052
+Cadmium (Cd),Manufactured Device,ug/L,0.01609764556058279
+Cadmium (Cd),Manufactured Device,ug/L,0.01987489180080929
+Cadmium (Cd),Manufactured Device,ug/L,0.026217532833081952
+Cadmium (Cd),Manufactured Device,ug/L,0.03096016277479378
+Cadmium (Cd),Manufactured Device,ug/L,0.0389683283074212
+Cadmium (Cd),Manufactured Device,ug/L,0.05162737466512635
+Cadmium (Cd),Manufactured Device,ug/L,0.0570626816076907
+Cadmium (Cd),Retention Pond,ug/L,0.05326290196862669
+Cadmium (Cd),Retention Pond,ug/L,0.09707183857468919
+Cadmium (Cd),Retention Pond,ug/L,0.14558048815902666
+Cadmium (Cd),Retention Pond,ug/L,0.20095467697208869
+Cadmium (Cd),Retention Pond,ug/L,0.2650323701090051
+Cadmium (Cd),Retention Pond,ug/L,0.3398903379795925
+Cadmium (Cd),Retention Pond,ug/L,0.4281081308171867
+Cadmium (Cd),Retention Pond,ug/L,0.533034736419146
+Cadmium (Cd),Retention Pond,ug/L,0.6591535238962437
+Cadmium (Cd),Retention Pond,ug/L,0.812639847156731
+Copper (Cu),ED-1,ug/L,8.6
+Copper (Cu),ED-1,ug/L,5.3
+Copper (Cu),ED-1,ug/L,4.7
+Copper (Cu),ED-1,ug/L,3.4
+Copper (Cu),ED-1,ug/L,6.9
+Copper (Cu),ED-1,ug/L,16.8
+Copper (Cu),ED-1,ug/L,11.5
+Copper (Cu),ED-1,ug/L,5.6
+Copper (Cu),ED-1,ug/L,18.0
+Copper (Cu),ED-1,ug/L,12.0
+Copper (Cu),LV-1,ug/L,31.0
+Copper (Cu),LV-1,ug/L,29.7
+Copper (Cu),LV-1,ug/L,15.2
+Copper (Cu),LV-1,ug/L,22.5
+Copper (Cu),LV-1,ug/L,24.0
+Copper (Cu),LV-1,ug/L,23.8
+Copper (Cu),LV-1,ug/L,10.1
+Copper (Cu),LV-1,ug/L,11.7
+Copper (Cu),LV-1,ug/L,17.0
+Copper (Cu),LV-1,ug/L,12.7
+Copper (Cu),LV-2,ug/L,26.7
+Copper (Cu),LV-2,ug/L,18.9
+Copper (Cu),LV-2,ug/L,16.8
+Copper (Cu),LV-2,ug/L,11.4
+Copper (Cu),LV-2,ug/L,17.2
+Copper (Cu),LV-2,ug/L,22.3
+Copper (Cu),LV-2,ug/L,18.7
+Copper (Cu),LV-2,ug/L,13.2
+Copper (Cu),LV-2,ug/L,11.9
+Copper (Cu),LV-2,ug/L,24.0
+Copper (Cu),LV-4,ug/L,18.0
+Copper (Cu),LV-4,ug/L,16.4
+Copper (Cu),LV-4,ug/L,13.5
+Copper (Cu),LV-4,ug/L,18.1
+Copper (Cu),LV-4,ug/L,26.2
+Copper (Cu),LV-4,ug/L,14.1
+Copper (Cu),LV-4,ug/L,14.3
+Copper (Cu),LV-4,ug/L,14.3
+Copper (Cu),LV-4,ug/L,13.9
+Copper (Cu),LV-4,ug/L,21.1
+Copper (Cu),Manufactured Device,ug/L,2.749332628710603
+Copper (Cu),Manufactured Device,ug/L,2.0
+Copper (Cu),Manufactured Device,ug/L,2.0
+Copper (Cu),Manufactured Device,ug/L,2.0
+Copper (Cu),Manufactured Device,ug/L,2.0
+Copper (Cu),Manufactured Device,ug/L,2.0
+Copper (Cu),Manufactured Device,ug/L,2.0
+Copper (Cu),Manufactured Device,ug/L,2.0
+Copper (Cu),Manufactured Device,ug/L,2.0
+Copper (Cu),Manufactured Device,ug/L,2.0
+Copper (Cu),Retention Pond,ug/L,2.0762112383610614
+Copper (Cu),Retention Pond,ug/L,2.540267248486787
+Copper (Cu),Retention Pond,ug/L,2.904348412418271
+Copper (Cu),Retention Pond,ug/L,3.2253497528615767
+Copper (Cu),Retention Pond,ug/L,3.5239133935808193
+Copper (Cu),Retention Pond,ug/L,3.810468083837382
+Copper (Cu),Retention Pond,ug/L,4.091385755656375
+Copper (Cu),Retention Pond,ug/L,4.371139727307398
+Copper (Cu),Retention Pond,ug/L,4.6532529311364605
+Copper (Cu),Retention Pond,ug/L,4.940791506425161
+Dissolved Chloride (Cl),ED-1,mg/L,140.0
+Dissolved Chloride (Cl),ED-1,mg/L,130.0
+Dissolved Chloride (Cl),ED-1,mg/L,46.0
+Dissolved Chloride (Cl),ED-1,mg/L,240.0
+Dissolved Chloride (Cl),ED-1,mg/L,110.0
+Dissolved Chloride (Cl),ED-1,mg/L,46.0
+Dissolved Chloride (Cl),ED-1,mg/L,340.0
+Dissolved Chloride (Cl),ED-1,mg/L,140.0
+Dissolved Chloride (Cl),ED-1,mg/L,310.0
+Dissolved Chloride (Cl),ED-1,mg/L,170.0
+Dissolved Chloride (Cl),LV-1,mg/L,3400.0
+Dissolved Chloride (Cl),LV-1,mg/L,39.0
+Dissolved Chloride (Cl),LV-1,mg/L,20.0
+Dissolved Chloride (Cl),LV-1,mg/L,13.0
+Dissolved Chloride (Cl),LV-1,mg/L,15.0
+Dissolved Chloride (Cl),LV-1,mg/L,9.0
+Dissolved Chloride (Cl),LV-1,mg/L,6.0
+Dissolved Chloride (Cl),LV-1,mg/L,10.0
+Dissolved Chloride (Cl),LV-1,mg/L,8.0
+Dissolved Chloride (Cl),LV-1,mg/L,5.0
+Dissolved Chloride (Cl),LV-2,mg/L,75.0
+Dissolved Chloride (Cl),LV-2,mg/L,91.0
+Dissolved Chloride (Cl),LV-2,mg/L,25.0
+Dissolved Chloride (Cl),LV-2,mg/L,22.0
+Dissolved Chloride (Cl),LV-2,mg/L,17.0
+Dissolved Chloride (Cl),LV-2,mg/L,12.0
+Dissolved Chloride (Cl),LV-2,mg/L,40.0
+Dissolved Chloride (Cl),LV-2,mg/L,18.0
+Dissolved Chloride (Cl),LV-2,mg/L,8.0
+Dissolved Chloride (Cl),LV-2,mg/L,320.0
+Dissolved Chloride (Cl),LV-4,mg/L,100.0
+Dissolved Chloride (Cl),LV-4,mg/L,24.0
+Dissolved Chloride (Cl),LV-4,mg/L,160.0
+Dissolved Chloride (Cl),LV-4,mg/L,90.0
+Dissolved Chloride (Cl),LV-4,mg/L,23.0
+Dissolved Chloride (Cl),LV-4,mg/L,37.0
+Dissolved Chloride (Cl),LV-4,mg/L,30.0
+Dissolved Chloride (Cl),LV-4,mg/L,71.0
+Dissolved Chloride (Cl),LV-4,mg/L,44.0
+Dissolved Chloride (Cl),LV-4,mg/L,75.0
+Dissolved Chloride (Cl),Manufactured Device,mg/L,0.8000000119209291
+Dissolved Chloride (Cl),Manufactured Device,mg/L,0.8000000119209291
+Dissolved Chloride (Cl),Manufactured Device,mg/L,0.8999999761581421
+Dissolved Chloride (Cl),Manufactured Device,mg/L,0.8999999761581421
+Dissolved Chloride (Cl),Manufactured Device,mg/L,0.8999999761581421
+Dissolved Chloride (Cl),Manufactured Device,mg/L,0.8999999761581421
+Dissolved Chloride (Cl),Manufactured Device,mg/L,0.8999999761581421
+Dissolved Chloride (Cl),Manufactured Device,mg/L,0.8999999761581421
+Dissolved Chloride (Cl),Manufactured Device,mg/L,1.0
+Dissolved Chloride (Cl),Manufactured Device,mg/L,1.0
+Escherichia coli,ED-1,CFU/100 mL,9000.0
+Escherichia coli,ED-1,CFU/100 mL,150.0
+Escherichia coli,ED-1,CFU/100 mL,88.0
+Escherichia coli,ED-1,CFU/100 mL,350.0
+Escherichia coli,ED-1,CFU/100 mL,1400.0
+Escherichia coli,ED-1,CFU/100 mL,960.0
+Escherichia coli,LV-1,CFU/100 mL,50.0
+Escherichia coli,LV-1,CFU/100 mL,7.0
+Escherichia coli,LV-2,CFU/100 mL,4100.0
+Escherichia coli,LV-4,CFU/100 mL,88.0
+Escherichia coli,LV-4,CFU/100 mL,36.0
+Iron (Fe),ED-1,ug/L,1350.0
+Iron (Fe),ED-1,ug/L,223.0
+Iron (Fe),ED-1,ug/L,286.0
+Iron (Fe),ED-1,ug/L,211.0
+Iron (Fe),ED-1,ug/L,627.0
+Iron (Fe),ED-1,ug/L,1290.0
+Iron (Fe),ED-1,ug/L,243.0
+Iron (Fe),ED-1,ug/L,199.0
+Iron (Fe),ED-1,ug/L,2820.0
+Iron (Fe),ED-1,ug/L,364.0
+Iron (Fe),LV-1,ug/L,1140.0
+Iron (Fe),LV-1,ug/L,1230.0
+Iron (Fe),LV-1,ug/L,583.0
+Iron (Fe),LV-1,ug/L,715.0
+Iron (Fe),LV-1,ug/L,1370.0
+Iron (Fe),LV-1,ug/L,656.0
+Iron (Fe),LV-1,ug/L,194.0
+Iron (Fe),LV-1,ug/L,377.0
+Iron (Fe),LV-1,ug/L,951.0
+Iron (Fe),LV-1,ug/L,1080.0
+Iron (Fe),LV-2,ug/L,1160.0
+Iron (Fe),LV-2,ug/L,586.0
+Iron (Fe),LV-2,ug/L,437.0
+Iron (Fe),LV-2,ug/L,257.0
+Iron (Fe),LV-2,ug/L,588.0
+Iron (Fe),LV-2,ug/L,751.0
+Iron (Fe),LV-2,ug/L,1110.0
+Iron (Fe),LV-2,ug/L,299.0
+Iron (Fe),LV-2,ug/L,396.0
+Iron (Fe),LV-2,ug/L,2200.0
+Iron (Fe),LV-4,ug/L,324.0
+Iron (Fe),LV-4,ug/L,300.0
+Iron (Fe),LV-4,ug/L,659.0
+Iron (Fe),LV-4,ug/L,207.0
+Iron (Fe),LV-4,ug/L,556.0
+Iron (Fe),LV-4,ug/L,223.0
+Iron (Fe),LV-4,ug/L,168.0
+Iron (Fe),LV-4,ug/L,146.0
+Iron (Fe),LV-4,ug/L,163.0
+Iron (Fe),LV-4,ug/L,110.0
+Iron (Fe),Retention Pond,ug/L,20.0
+Iron (Fe),Retention Pond,ug/L,20.0
+Iron (Fe),Retention Pond,ug/L,70.0
+Iron (Fe),Retention Pond,ug/L,100.0
+Iron (Fe),Retention Pond,ug/L,100.0
+Iron (Fe),Retention Pond,ug/L,100.0
+Iron (Fe),Retention Pond,ug/L,110.0
+Iron (Fe),Retention Pond,ug/L,120.0
+Iron (Fe),Retention Pond,ug/L,120.0
+Iron (Fe),Retention Pond,ug/L,140.0
+Lead (Pb),ED-1,ug/L,6.13
+Lead (Pb),ED-1,ug/L,1.9
+Lead (Pb),ED-1,ug/L,1.24
+Lead (Pb),ED-1,ug/L,0.94
+Lead (Pb),ED-1,ug/L,6.1
+Lead (Pb),ED-1,ug/L,17.9
+Lead (Pb),ED-1,ug/L,1.2
+Lead (Pb),ED-1,ug/L,0.8
+Lead (Pb),ED-1,ug/L,6.91
+Lead (Pb),ED-1,ug/L,1.6
+Lead (Pb),LV-1,ug/L,19.1
+Lead (Pb),LV-1,ug/L,18.7
+Lead (Pb),LV-1,ug/L,6.4
+Lead (Pb),LV-1,ug/L,7.38
+Lead (Pb),LV-1,ug/L,15.9
+Lead (Pb),LV-1,ug/L,7.7
+Lead (Pb),LV-1,ug/L,2.12
+Lead (Pb),LV-1,ug/L,3.76
+Lead (Pb),LV-1,ug/L,9.66
+Lead (Pb),LV-1,ug/L,12.0
+Lead (Pb),LV-2,ug/L,30.6
+Lead (Pb),LV-2,ug/L,10.8
+Lead (Pb),LV-2,ug/L,4.92
+Lead (Pb),LV-2,ug/L,2.94
+Lead (Pb),LV-2,ug/L,7.68
+Lead (Pb),LV-2,ug/L,10.8
+Lead (Pb),LV-2,ug/L,10.2
+Lead (Pb),LV-2,ug/L,2.93
+Lead (Pb),LV-2,ug/L,5.42
+Lead (Pb),LV-2,ug/L,11.0
+Lead (Pb),LV-4,ug/L,2.5
+Lead (Pb),LV-4,ug/L,3.2
+Lead (Pb),LV-4,ug/L,4.6
+Lead (Pb),LV-4,ug/L,1.95
+Lead (Pb),LV-4,ug/L,5.2
+Lead (Pb),LV-4,ug/L,2.1
+Lead (Pb),LV-4,ug/L,1.89
+Lead (Pb),LV-4,ug/L,1.6
+Lead (Pb),LV-4,ug/L,2.1
+Lead (Pb),LV-4,ug/L,1.3
+Lead (Pb),Manufactured Device,ug/L,0.22200546033562446
+Lead (Pb),Manufactured Device,ug/L,0.33748440740014746
+Lead (Pb),Manufactured Device,ug/L,0.8210058519233443
+Lead (Pb),Manufactured Device,ug/L,1.109603480382835
+Lead (Pb),Manufactured Device,ug/L,1.3268185585725973
+Lead (Pb),Manufactured Device,ug/L,2.2237755921693876
+Lead (Pb),Manufactured Device,ug/L,7.256699330635152
+Lead (Pb),Manufactured Device,ug/L,0.8999999761581421
+Lead (Pb),Manufactured Device,ug/L,0.8999999761581421
+Lead (Pb),Manufactured Device,ug/L,0.9200000166893004
+Lead (Pb),Retention Pond,ug/L,0.9477203018530147
+Lead (Pb),Retention Pond,ug/L,1.039568414019931
+Lead (Pb),Retention Pond,ug/L,1.5077100354906896
+Lead (Pb),Retention Pond,ug/L,2.076365756212547
+Lead (Pb),Retention Pond,ug/L,2.6926896536187823
+Lead (Pb),Retention Pond,ug/L,3.3833203767716697
+Lead (Pb),Retention Pond,ug/L,4.176400610284988
+Lead (Pb),Retention Pond,ug/L,5.107839042027556
+Lead (Pb),Retention Pond,ug/L,6.228212617523908
+Lead (Pb),Retention Pond,ug/L,7.6141195671685065
+Lead (Pb),Wetland Channel,ug/L,0.30000001192092896
+Lead (Pb),Wetland Channel,ug/L,0.3999999761581421
+Lead (Pb),Wetland Channel,ug/L,0.5
+Lead (Pb),Wetland Channel,ug/L,0.5
+Lead (Pb),Wetland Channel,ug/L,0.5
+Lead (Pb),Wetland Channel,ug/L,0.699999988079071
+Lead (Pb),Wetland Channel,ug/L,0.699999988079071
+Lead (Pb),Wetland Channel,ug/L,0.7999999523162842
+Lead (Pb),Wetland Channel,ug/L,0.7999999523162842
+Lead (Pb),Wetland Channel,ug/L,0.7999999523162842
+Nickel (Ni),ED-1,ug/L,2.2
+Nickel (Ni),ED-1,ug/L,0.9
+Nickel (Ni),ED-1,ug/L,0.7
+Nickel (Ni),ED-1,ug/L,0.5
+Nickel (Ni),ED-1,ug/L,1.3
+Nickel (Ni),ED-1,ug/L,2.6
+Nickel (Ni),ED-1,ug/L,0.8
+Nickel (Ni),ED-1,ug/L,0.6
+Nickel (Ni),ED-1,ug/L,4.3
+Nickel (Ni),ED-1,ug/L,1.0
+Nickel (Ni),LV-1,ug/L,5.0
+Nickel (Ni),LV-1,ug/L,2.8
+Nickel (Ni),LV-1,ug/L,1.4
+Nickel (Ni),LV-1,ug/L,2.3
+Nickel (Ni),LV-1,ug/L,3.1
+Nickel (Ni),LV-1,ug/L,1.9
+Nickel (Ni),LV-1,ug/L,0.8
+Nickel (Ni),LV-1,ug/L,0.8
+Nickel (Ni),LV-1,ug/L,1.6
+Nickel (Ni),LV-1,ug/L,1.7
+Nickel (Ni),LV-2,ug/L,2.6
+Nickel (Ni),LV-2,ug/L,1.3
+Nickel (Ni),LV-2,ug/L,0.8
+Nickel (Ni),LV-2,ug/L,0.5
+Nickel (Ni),LV-2,ug/L,1.3
+Nickel (Ni),LV-2,ug/L,2.0
+Nickel (Ni),LV-2,ug/L,2.2
+Nickel (Ni),LV-2,ug/L,1.3
+Nickel (Ni),LV-2,ug/L,1.0
+Nickel (Ni),LV-2,ug/L,3.4
+Nickel (Ni),LV-4,ug/L,16.0
+Nickel (Ni),LV-4,ug/L,15.6
+Nickel (Ni),LV-4,ug/L,13.3
+Nickel (Ni),LV-4,ug/L,36.5
+Nickel (Ni),LV-4,ug/L,17.3
+Nickel (Ni),LV-4,ug/L,13.5
+Nickel (Ni),LV-4,ug/L,14.1
+Nickel (Ni),LV-4,ug/L,32.3
+Nickel (Ni),LV-4,ug/L,25.2
+Nickel (Ni),LV-4,ug/L,25.9
+Nickel (Ni),Retention Pond,ug/L,1.0
+Nickel (Ni),Retention Pond,ug/L,1.0
+Nickel (Ni),Retention Pond,ug/L,1.0
+Nickel (Ni),Retention Pond,ug/L,1.5833333333333333
+Nickel (Ni),Retention Pond,ug/L,1.5999999046325684
+Nickel (Ni),Retention Pond,ug/L,2.0
+Nickel (Ni),Retention Pond,ug/L,2.0
+Nickel (Ni),Retention Pond,ug/L,2.0
+Nickel (Ni),Retention Pond,ug/L,2.0
+Nickel (Ni),Retention Pond,ug/L,2.0
+Nitrate (N),ED-1,mg/L,1.4
+Nitrate (N),ED-1,mg/L,1.4
+Nitrate (N),ED-1,mg/L,1.0
+Nitrate (N),ED-1,mg/L,1.7
+Nitrate (N),ED-1,mg/L,0.97
+Nitrate (N),ED-1,mg/L,0.84
+Nitrate (N),ED-1,mg/L,1.8
+Nitrate (N),ED-1,mg/L,1.2
+Nitrate (N),ED-1,mg/L,2.3
+Nitrate (N),ED-1,mg/L,1.03
+Nitrate (N),LV-1,mg/L,0.67
+Nitrate (N),LV-1,mg/L,0.42
+Nitrate (N),LV-1,mg/L,0.27
+Nitrate (N),LV-1,mg/L,0.1
+Nitrate (N),LV-1,mg/L,0.23
+Nitrate (N),LV-1,mg/L,0.1
+Nitrate (N),LV-1,mg/L,0.2
+Nitrate (N),LV-1,mg/L,0.33
+Nitrate (N),LV-1,mg/L,0.26
+Nitrate (N),LV-1,mg/L,0.27
+Nitrate (N),LV-2,mg/L,1.2
+Nitrate (N),LV-2,mg/L,1.5
+Nitrate (N),LV-2,mg/L,0.46
+Nitrate (N),LV-2,mg/L,0.35
+Nitrate (N),LV-2,mg/L,0.71
+Nitrate (N),LV-2,mg/L,0.73
+Nitrate (N),LV-2,mg/L,0.19
+Nitrate (N),LV-2,mg/L,0.65
+Nitrate (N),LV-2,mg/L,0.35
+Nitrate (N),LV-2,mg/L,2.26
+Nitrate (N),LV-4,mg/L,1.1
+Nitrate (N),LV-4,mg/L,1.2
+Nitrate (N),LV-4,mg/L,4.96
+Nitrate (N),LV-4,mg/L,1.3
+Nitrate (N),LV-4,mg/L,1.1
+Nitrate (N),LV-4,mg/L,1.85
+Nitrate (N),LV-4,mg/L,2.51
+Nitrate (N),LV-4,mg/L,1.0
+Nitrate (N),LV-4,mg/L,0.74
+Nitrate (N),LV-4,mg/L,2.4
+Nitrate (N),Retention Pond,mg/L,0.02800000086426735
+Nitrate (N),Retention Pond,mg/L,0.029999999329447743
+Nitrate (N),Retention Pond,mg/L,0.03999999910593033
+Nitrate (N),Retention Pond,mg/L,0.05000000074505806
+Nitrate (N),Retention Pond,mg/L,0.05000000074505806
+Nitrate (N),Retention Pond,mg/L,0.05000000074505806
+Nitrate (N),Retention Pond,mg/L,0.05000000074505806
+Nitrate (N),Retention Pond,mg/L,0.05000000074505806
+Nitrate (N),Retention Pond,mg/L,0.07999999821186066
+Nitrate (N),Retention Pond,mg/L,0.09000000357627869
+Nitrate (N),Wetland Channel,mg/L,0.016000000759959217
+Nitrate (N),Wetland Channel,mg/L,0.05000000074505806
+Nitrate (N),Wetland Channel,mg/L,0.05000000074505806
+Nitrate (N),Wetland Channel,mg/L,0.05000000074505806
+Nitrate (N),Wetland Channel,mg/L,0.05000000074505806
+Nitrate (N),Wetland Channel,mg/L,0.05000000074505806
+Nitrate (N),Wetland Channel,mg/L,0.059999998658895486
+Nitrate (N),Wetland Channel,mg/L,0.07000000029802322
+Nitrate (N),Wetland Channel,mg/L,0.07999999821186066
+Nitrate (N),Wetland Channel,mg/L,0.07999999821186066
+Nitrate + Nitrite,Bioretention,mg/L,0.0263420829389087
+Nitrate + Nitrite,Bioretention,mg/L,0.048282865155916226
+Nitrate + Nitrite,Bioretention,mg/L,0.002426666906103492
+Nitrate + Nitrite,Bioretention,mg/L,0.009608169086277485
+Nitrate + Nitrite,Bioretention,mg/L,0.015561340376734734
+Nitrate + Nitrite,Bioretention,mg/L,0.07486569136381149
+Nitrate + Nitrite,Bioretention,mg/L,0.07800000160932541
+Nitrate + Nitrite,Bioretention,mg/L,0.08041887730360031
+Nitrate + Nitrite,Bioretention,mg/L,0.0858423262834549
+Nitrate + Nitrite,Bioretention,mg/L,0.09278350323438644
+Nitrate + Nitrite,ED-1,mg/L,1.5
+Nitrate + Nitrite,ED-1,mg/L,1.4
+Nitrate + Nitrite,ED-1,mg/L,1.0
+Nitrate + Nitrite,ED-1,mg/L,1.7
+Nitrate + Nitrite,ED-1,mg/L,0.97
+Nitrate + Nitrite,ED-1,mg/L,0.84
+Nitrate + Nitrite,ED-1,mg/L,1.9
+Nitrate + Nitrite,ED-1,mg/L,1.2
+Nitrate + Nitrite,ED-1,mg/L,3.12
+Nitrate + Nitrite,ED-1,mg/L,1.06
+Nitrate + Nitrite,LV-1,mg/L,0.7
+Nitrate + Nitrite,LV-1,mg/L,0.42
+Nitrate + Nitrite,LV-1,mg/L,0.29
+Nitrate + Nitrite,LV-1,mg/L,0.1
+Nitrate + Nitrite,LV-1,mg/L,0.25
+Nitrate + Nitrite,LV-1,mg/L,0.11
+Nitrate + Nitrite,LV-1,mg/L,0.21
+Nitrate + Nitrite,LV-1,mg/L,0.36
+Nitrate + Nitrite,LV-1,mg/L,0.29
+Nitrate + Nitrite,LV-1,mg/L,0.29
+Nitrate + Nitrite,LV-2,mg/L,1.2
+Nitrate + Nitrite,LV-2,mg/L,1.5
+Nitrate + Nitrite,LV-2,mg/L,0.47
+Nitrate + Nitrite,LV-2,mg/L,0.36
+Nitrate + Nitrite,LV-2,mg/L,0.74
+Nitrate + Nitrite,LV-2,mg/L,0.79
+Nitrate + Nitrite,LV-2,mg/L,0.23
+Nitrate + Nitrite,LV-2,mg/L,0.69
+Nitrate + Nitrite,LV-2,mg/L,0.37
+Nitrate + Nitrite,LV-2,mg/L,2.29
+Nitrate + Nitrite,LV-4,mg/L,1.1
+Nitrate + Nitrite,LV-4,mg/L,1.2
+Nitrate + Nitrite,LV-4,mg/L,5.01
+Nitrate + Nitrite,LV-4,mg/L,1.3
+Nitrate + Nitrite,LV-4,mg/L,1.1
+Nitrate + Nitrite,LV-4,mg/L,1.88
+Nitrate + Nitrite,LV-4,mg/L,2.64
+Nitrate + Nitrite,LV-4,mg/L,1.0
+Nitrate + Nitrite,LV-4,mg/L,0.74
+Nitrate + Nitrite,LV-4,mg/L,2.4
+Nitrate + Nitrite,Manufactured Device,mg/L,0.07490919987778343
+Nitrate + Nitrite,Manufactured Device,mg/L,0.09080784932565938
+Nitrate + Nitrite,Manufactured Device,mg/L,0.13045364576476887
+Nitrate + Nitrite,Manufactured Device,mg/L,0.16719864283009933
+Nitrate + Nitrite,Manufactured Device,mg/L,0.20427056382394027
+Nitrate + Nitrite,Manufactured Device,mg/L,0.24325248150172646
+Nitrate + Nitrite,Manufactured Device,mg/L,0.28539039657546733
+Nitrate + Nitrite,Manufactured Device,mg/L,0.33197739232387513
+Nitrate + Nitrite,Manufactured Device,mg/L,0.38459035529122704
+Nitrate + Nitrite,Manufactured Device,mg/L,0.44535620544580196
+Nitrate + Nitrite,Retention Pond,mg/L,0.054249879297780385
+Nitrate + Nitrite,Retention Pond,mg/L,0.01486807968467474
+Nitrate + Nitrite,Retention Pond,mg/L,0.01999000087380409
+Nitrate + Nitrite,Retention Pond,mg/L,0.025989999994635585
+Nitrate + Nitrite,Retention Pond,mg/L,0.029999999329447743
+Nitrate + Nitrite,Retention Pond,mg/L,0.03311999887228012
+Nitrate + Nitrite,Retention Pond,mg/L,0.05000000074505806
+Nitrate + Nitrite,Retention Pond,mg/L,0.05000000074505806
+Nitrate + Nitrite,Retention Pond,mg/L,0.05000000074505806
+Nitrate + Nitrite,Retention Pond,mg/L,0.059999998658895486
+Orthophosphate (P),ED-1,mg/L,0.052000000000000005
+Orthophosphate (P),ED-1,mg/L,0.035
+Orthophosphate (P),ED-1,mg/L,0.037000000000000005
+Orthophosphate (P),ED-1,mg/L,0.035
+Orthophosphate (P),ED-1,mg/L,0.046
+Orthophosphate (P),ED-1,mg/L,0.07200000000000001
+Orthophosphate (P),ED-1,mg/L,0.055
+Orthophosphate (P),ED-1,mg/L,0.013999999999999999
+Orthophosphate (P),ED-1,mg/L,0.45
+Orthophosphate (P),ED-1,mg/L,0.042
+Orthophosphate (P),LV-1,mg/L,0.38
+Orthophosphate (P),LV-1,mg/L,0.084
+Orthophosphate (P),LV-1,mg/L,0.048
+Orthophosphate (P),LV-1,mg/L,0.21
+Orthophosphate (P),LV-1,mg/L,0.18
+Orthophosphate (P),LV-1,mg/L,0.17
+Orthophosphate (P),LV-1,mg/L,0.19
+Orthophosphate (P),LV-1,mg/L,0.16
+Orthophosphate (P),LV-1,mg/L,0.069
+Orthophosphate (P),LV-1,mg/L,0.095
+Orthophosphate (P),LV-2,mg/L,0.13
+Orthophosphate (P),LV-2,mg/L,0.15
+Orthophosphate (P),LV-2,mg/L,0.1
+Orthophosphate (P),LV-2,mg/L,0.1
+Orthophosphate (P),LV-2,mg/L,0.12
+Orthophosphate (P),LV-2,mg/L,0.12
+Orthophosphate (P),LV-2,mg/L,0.33
+Orthophosphate (P),LV-2,mg/L,0.15
+Orthophosphate (P),LV-2,mg/L,0.14
+Orthophosphate (P),LV-2,mg/L,0.17
+Orthophosphate (P),LV-4,mg/L,0.29
+Orthophosphate (P),LV-4,mg/L,0.28
+Orthophosphate (P),LV-4,mg/L,0.37
+Orthophosphate (P),LV-4,mg/L,0.25
+Orthophosphate (P),LV-4,mg/L,0.66
+Orthophosphate (P),LV-4,mg/L,0.16
+Orthophosphate (P),LV-4,mg/L,0.12
+Orthophosphate (P),LV-4,mg/L,0.09300000000000001
+Orthophosphate (P),LV-4,mg/L,0.096
+Orthophosphate (P),LV-4,mg/L,0.15
+Orthophosphate (P),Retention Pond,mg/L,0.004000000189989804
+Orthophosphate (P),Retention Pond,mg/L,0.006000000052154064
+Orthophosphate (P),Retention Pond,mg/L,0.009990000165998936
+Orthophosphate (P),Retention Pond,mg/L,0.009999999776482582
+Orthophosphate (P),Retention Pond,mg/L,0.009999999776482582
+Orthophosphate (P),Retention Pond,mg/L,0.009999999776482582
+Orthophosphate (P),Retention Pond,mg/L,0.009999999776482582
+Orthophosphate (P),Retention Pond,mg/L,0.012000000104308128
+Orthophosphate (P),Retention Pond,mg/L,0.015790000557899475
+Orthophosphate (P),Retention Pond,mg/L,0.01686999946832657
+Total Kjeldahl Nitrogen (TKN),ED-1,mg/L,1.2
+Total Kjeldahl Nitrogen (TKN),ED-1,mg/L,0.57
+Total Kjeldahl Nitrogen (TKN),ED-1,mg/L,0.3
+Total Kjeldahl Nitrogen (TKN),ED-1,mg/L,0.62
+Total Kjeldahl Nitrogen (TKN),ED-1,mg/L,0.55
+Total Kjeldahl Nitrogen (TKN),ED-1,mg/L,0.86
+Total Kjeldahl Nitrogen (TKN),ED-1,mg/L,1.2
+Total Kjeldahl Nitrogen (TKN),ED-1,mg/L,0.8
+Total Kjeldahl Nitrogen (TKN),ED-1,mg/L,7.0
+Total Kjeldahl Nitrogen (TKN),ED-1,mg/L,0.38
+Total Kjeldahl Nitrogen (TKN),LV-1,mg/L,5.8
+Total Kjeldahl Nitrogen (TKN),LV-1,mg/L,2.3
+Total Kjeldahl Nitrogen (TKN),LV-1,mg/L,1.7
+Total Kjeldahl Nitrogen (TKN),LV-1,mg/L,4.2
+Total Kjeldahl Nitrogen (TKN),LV-1,mg/L,3.5
+Total Kjeldahl Nitrogen (TKN),LV-1,mg/L,3.9
+Total Kjeldahl Nitrogen (TKN),LV-1,mg/L,1.1
+Total Kjeldahl Nitrogen (TKN),LV-1,mg/L,1.6
+Total Kjeldahl Nitrogen (TKN),LV-1,mg/L,2.5
+Total Kjeldahl Nitrogen (TKN),LV-1,mg/L,1.8
+Total Kjeldahl Nitrogen (TKN),LV-2,mg/L,4.7
+Total Kjeldahl Nitrogen (TKN),LV-2,mg/L,1.5
+Total Kjeldahl Nitrogen (TKN),LV-2,mg/L,1.3
+Total Kjeldahl Nitrogen (TKN),LV-2,mg/L,1.0
+Total Kjeldahl Nitrogen (TKN),LV-2,mg/L,2.7
+Total Kjeldahl Nitrogen (TKN),LV-2,mg/L,4.1
+Total Kjeldahl Nitrogen (TKN),LV-2,mg/L,2.5
+Total Kjeldahl Nitrogen (TKN),LV-2,mg/L,1.9
+Total Kjeldahl Nitrogen (TKN),LV-2,mg/L,1.2
+Total Kjeldahl Nitrogen (TKN),LV-2,mg/L,1.5
+Total Kjeldahl Nitrogen (TKN),LV-4,mg/L,2.7
+Total Kjeldahl Nitrogen (TKN),LV-4,mg/L,1.4
+Total Kjeldahl Nitrogen (TKN),LV-4,mg/L,2.0
+Total Kjeldahl Nitrogen (TKN),LV-4,mg/L,2.1
+Total Kjeldahl Nitrogen (TKN),LV-4,mg/L,2.9
+Total Kjeldahl Nitrogen (TKN),LV-4,mg/L,1.0
+Total Kjeldahl Nitrogen (TKN),LV-4,mg/L,1.7
+Total Kjeldahl Nitrogen (TKN),LV-4,mg/L,1.6
+Total Kjeldahl Nitrogen (TKN),LV-4,mg/L,2.0
+Total Kjeldahl Nitrogen (TKN),LV-4,mg/L,1.8
+Total Kjeldahl Nitrogen (TKN),Manufactured Device,mg/L,0.10798432978136052
+Total Kjeldahl Nitrogen (TKN),Manufactured Device,mg/L,0.20561176183866842
+Total Kjeldahl Nitrogen (TKN),Manufactured Device,mg/L,0.2812006454760799
+Total Kjeldahl Nitrogen (TKN),Manufactured Device,mg/L,0.3495733660829792
+Total Kjeldahl Nitrogen (TKN),Manufactured Device,mg/L,0.4178343697457405
+Total Kjeldahl Nitrogen (TKN),Manufactured Device,mg/L,0.45283628225697253
+Total Kjeldahl Nitrogen (TKN),Manufactured Device,mg/L,0.6098373097485156
+Total Kjeldahl Nitrogen (TKN),Manufactured Device,mg/L,0.878225748047315
+Total Kjeldahl Nitrogen (TKN),Manufactured Device,mg/L,0.10000000149011612
+Total Kjeldahl Nitrogen (TKN),Manufactured Device,mg/L,0.20000000298023224
+Total Kjeldahl Nitrogen (TKN),Retention Pond,mg/L,0.07000000029802322
+Total Kjeldahl Nitrogen (TKN),Retention Pond,mg/L,0.10000000149011612
+Total Kjeldahl Nitrogen (TKN),Retention Pond,mg/L,0.119999997317791
+Total Kjeldahl Nitrogen (TKN),Retention Pond,mg/L,0.3499999940395355
+Total Kjeldahl Nitrogen (TKN),Retention Pond,mg/L,0.3499999940395355
+Total Kjeldahl Nitrogen (TKN),Retention Pond,mg/L,0.4099999964237213
+Total Kjeldahl Nitrogen (TKN),Retention Pond,mg/L,0.4399999976158142
+Total Kjeldahl Nitrogen (TKN),Retention Pond,mg/L,0.44999998807907104
+Total Kjeldahl Nitrogen (TKN),Retention Pond,mg/L,0.479999989271164
+Total Kjeldahl Nitrogen (TKN),Retention Pond,mg/L,0.5099999904632568
+Total Kjeldahl Nitrogen (TKN),Wetland Channel,mg/L,0.699999988079071
+Total Kjeldahl Nitrogen (TKN),Wetland Channel,mg/L,1.100000023841858
+Total Kjeldahl Nitrogen (TKN),Wetland Channel,mg/L,1.100000023841858
+Total Kjeldahl Nitrogen (TKN),Wetland Channel,mg/L,1.2000000476837158
+Total Kjeldahl Nitrogen (TKN),Wetland Channel,mg/L,1.2000000476837158
+Total Kjeldahl Nitrogen (TKN),Wetland Channel,mg/L,1.2999999523162842
+Total Kjeldahl Nitrogen (TKN),Wetland Channel,mg/L,1.2999999523162842
+Total Kjeldahl Nitrogen (TKN),Wetland Channel,mg/L,1.2999999523162842
+Total Kjeldahl Nitrogen (TKN),Wetland Channel,mg/L,1.399999976158142
+Total Kjeldahl Nitrogen (TKN),Wetland Channel,mg/L,1.399999976158142
+Total Oil & Grease,ED-1,mg/L,0.5
+Total Oil & Grease,ED-1,mg/L,0.5
+Total Oil & Grease,ED-1,mg/L,0.7
+Total Oil & Grease,ED-1,mg/L,1.1
+Total Oil & Grease,ED-1,mg/L,0.5
+Total Oil & Grease,ED-1,mg/L,0.5
+Total Oil & Grease,LV-1,mg/L,1.8
+Total Oil & Grease,LV-1,mg/L,0.5
+Total Oil & Grease,LV-1,mg/L,0.5
+Total Oil & Grease,LV-2,mg/L,0.5
+Total Oil & Grease,LV-4,mg/L,1.4
+Total Oil & Grease,LV-4,mg/L,0.5
+Total Oil & Grease,LV-4,mg/L,0.5
+Total Oil & Grease,LV-4,mg/L,0.5
+Total Phosphorus,Bioretention,mg/L,0.03193788871981014
+Total Phosphorus,Bioretention,mg/L,0.044310798311507374
+Total Phosphorus,Bioretention,mg/L,0.09899670630693436
+Total Phosphorus,Bioretention,mg/L,0.10440000146627426
+Total Phosphorus,Bioretention,mg/L,0.11724790185689925
+Total Phosphorus,Bioretention,mg/L,0.11917179822921753
+Total Phosphorus,Bioretention,mg/L,0.12006259709596635
+Total Phosphorus,Bioretention,mg/L,0.13568660616874695
+Total Phosphorus,Bioretention,mg/L,0.1503860056400299
+Total Phosphorus,Bioretention,mg/L,0.15358500182628632
+Total Phosphorus,Detention Basin,mg/L,0.024613570421934128
+Total Phosphorus,Detention Basin,mg/L,0.030280001461505886
+Total Phosphorus,Detention Basin,mg/L,0.03742856904864311
+Total Phosphorus,Detention Basin,mg/L,0.07199999690055847
+Total Phosphorus,Detention Basin,mg/L,0.07470999658107758
+Total Phosphorus,Detention Basin,mg/L,0.0765800029039383
+Total Phosphorus,Detention Basin,mg/L,0.07692697644233704
+Total Phosphorus,Detention Basin,mg/L,0.07704240083694458
+Total Phosphorus,Detention Basin,mg/L,0.07720524072647095
+Total Phosphorus,Detention Basin,mg/L,0.0820000022649765
+Total Phosphorus,ED-1,mg/L,0.13
+Total Phosphorus,ED-1,mg/L,0.036000000000000004
+Total Phosphorus,ED-1,mg/L,0.055999999999999994
+Total Phosphorus,ED-1,mg/L,0.065
+Total Phosphorus,ED-1,mg/L,0.08
+Total Phosphorus,ED-1,mg/L,0.34
+Total Phosphorus,ED-1,mg/L,0.073
+Total Phosphorus,ED-1,mg/L,0.023
+Total Phosphorus,ED-1,mg/L,0.8
+Total Phosphorus,ED-1,mg/L,0.09300000000000001
+Total Phosphorus,LV-1,mg/L,0.57
+Total Phosphorus,LV-1,mg/L,0.37
+Total Phosphorus,LV-1,mg/L,0.24
+Total Phosphorus,LV-1,mg/L,0.67
+Total Phosphorus,LV-1,mg/L,0.47
+Total Phosphorus,LV-1,mg/L,0.48
+Total Phosphorus,LV-1,mg/L,0.2
+Total Phosphorus,LV-1,mg/L,0.28
+Total Phosphorus,LV-1,mg/L,0.47
+Total Phosphorus,LV-1,mg/L,0.26
+Total Phosphorus,LV-2,mg/L,0.6
+Total Phosphorus,LV-2,mg/L,0.24
+Total Phosphorus,LV-2,mg/L,0.22
+Total Phosphorus,LV-2,mg/L,0.2
+Total Phosphorus,LV-2,mg/L,0.34
+Total Phosphorus,LV-2,mg/L,0.57
+Total Phosphorus,LV-2,mg/L,0.59
+Total Phosphorus,LV-2,mg/L,0.31
+Total Phosphorus,LV-2,mg/L,0.28
+Total Phosphorus,LV-2,mg/L,0.27
+Total Phosphorus,LV-4,mg/L,0.42
+Total Phosphorus,LV-4,mg/L,0.35
+Total Phosphorus,LV-4,mg/L,0.52
+Total Phosphorus,LV-4,mg/L,0.32
+Total Phosphorus,LV-4,mg/L,0.76
+Total Phosphorus,LV-4,mg/L,0.19
+Total Phosphorus,LV-4,mg/L,0.18
+Total Phosphorus,LV-4,mg/L,0.094
+Total Phosphorus,LV-4,mg/L,0.11
+Total Phosphorus,LV-4,mg/L,0.17
+Total Phosphorus,Manufactured Device,mg/L,0.004478629863430162
+Total Phosphorus,Manufactured Device,mg/L,0.0056479650497414016
+Total Phosphorus,Manufactured Device,mg/L,0.0059442428236499995
+Total Phosphorus,Manufactured Device,mg/L,0.007105643345758838
+Total Phosphorus,Manufactured Device,mg/L,0.008120940711260788
+Total Phosphorus,Manufactured Device,mg/L,0.009048388050300159
+Total Phosphorus,Manufactured Device,mg/L,0.009916930460880111
+Total Phosphorus,Manufactured Device,mg/L,0.010743375071035437
+Total Phosphorus,Manufactured Device,mg/L,0.011538486439130165
+Total Phosphorus,Manufactured Device,mg/L,0.012309645535769954
+Total Phosphorus,Retention Pond,mg/L,0.009999999776482582
+Total Phosphorus,Retention Pond,mg/L,0.019999999552965164
+Total Phosphorus,Retention Pond,mg/L,0.019999999552965164
+Total Phosphorus,Retention Pond,mg/L,0.029999999329447743
+Total Phosphorus,Retention Pond,mg/L,0.03672662004828453
+Total Phosphorus,Retention Pond,mg/L,0.03999999910593033
+Total Phosphorus,Retention Pond,mg/L,0.03999999910593033
+Total Phosphorus,Retention Pond,mg/L,0.03999999910593033
+Total Phosphorus,Retention Pond,mg/L,0.03999999910593033
+Total Phosphorus,Retention Pond,mg/L,0.03999999910593033
+Total Phosphorus,Wetland Channel,mg/L,0.03999999910593033
+Total Phosphorus,Wetland Channel,mg/L,0.07999999821186066
+Total Phosphorus,Wetland Channel,mg/L,0.09000000357627869
+Total Phosphorus,Wetland Channel,mg/L,0.10000000149011612
+Total Phosphorus,Wetland Channel,mg/L,0.10000000149011612
+Total Phosphorus,Wetland Channel,mg/L,0.10999999940395357
+Total Phosphorus,Wetland Channel,mg/L,0.10999999940395357
+Total Phosphorus,Wetland Channel,mg/L,0.11100000143051147
+Total Phosphorus,Wetland Channel,mg/L,0.1120000034570694
+Total Phosphorus,Wetland Channel,mg/L,0.119999997317791
+Total Suspended Solids,Bioretention,mg/L,0.3369676003885261
+Total Suspended Solids,Bioretention,mg/L,0.7707652352176256
+Total Suspended Solids,Bioretention,mg/L,1.3810584763774074
+Total Suspended Solids,Bioretention,mg/L,2.243812910779152
+Total Suspended Solids,Bioretention,mg/L,3.479148335060465
+Total Suspended Solids,Bioretention,mg/L,5.2896202403601364
+Total Suspended Solids,Bioretention,mg/L,0.17712180316448212
+Total Suspended Solids,Bioretention,mg/L,0.20319999754428866
+Total Suspended Solids,Bioretention,mg/L,0.4476093947887421
+Total Suspended Solids,Bioretention,mg/L,0.5639098286628723
+Total Suspended Solids,Detention Basin,mg/L,4.53984138321796
+Total Suspended Solids,Detention Basin,mg/L,0.7155883908271791
+Total Suspended Solids,Detention Basin,mg/L,1.7999999523162842
+Total Suspended Solids,Detention Basin,mg/L,2.400000095367432
+Total Suspended Solids,Detention Basin,mg/L,3.0
+Total Suspended Solids,Detention Basin,mg/L,3.110806941986084
+Total Suspended Solids,Detention Basin,mg/L,3.502549886703491
+Total Suspended Solids,Detention Basin,mg/L,3.539999961853028
+Total Suspended Solids,Detention Basin,mg/L,4.429999828338623
+Total Suspended Solids,Detention Basin,mg/L,4.5142855644226065
+Total Suspended Solids,ED-1,mg/L,110.0
+Total Suspended Solids,ED-1,mg/L,11.0
+Total Suspended Solids,ED-1,mg/L,21.0
+Total Suspended Solids,ED-1,mg/L,13.0
+Total Suspended Solids,ED-1,mg/L,31.0
+Total Suspended Solids,ED-1,mg/L,170.0
+Total Suspended Solids,ED-1,mg/L,21.0
+Total Suspended Solids,ED-1,mg/L,22.0
+Total Suspended Solids,ED-1,mg/L,230.0
+Total Suspended Solids,ED-1,mg/L,21.0
+Total Suspended Solids,LV-1,mg/L,63.0
+Total Suspended Solids,LV-1,mg/L,160.0
+Total Suspended Solids,LV-1,mg/L,68.0
+Total Suspended Solids,LV-1,mg/L,89.0
+Total Suspended Solids,LV-1,mg/L,170.0
+Total Suspended Solids,LV-1,mg/L,120.0
+Total Suspended Solids,LV-1,mg/L,30.0
+Total Suspended Solids,LV-1,mg/L,37.0
+Total Suspended Solids,LV-1,mg/L,99.0
+Total Suspended Solids,LV-1,mg/L,180.0
+Total Suspended Solids,LV-2,mg/L,270.0
+Total Suspended Solids,LV-2,mg/L,63.0
+Total Suspended Solids,LV-2,mg/L,38.0
+Total Suspended Solids,LV-2,mg/L,19.0
+Total Suspended Solids,LV-2,mg/L,56.0
+Total Suspended Solids,LV-2,mg/L,66.0
+Total Suspended Solids,LV-2,mg/L,100.0
+Total Suspended Solids,LV-2,mg/L,31.0
+Total Suspended Solids,LV-2,mg/L,81.0
+Total Suspended Solids,LV-2,mg/L,45.0
+Total Suspended Solids,LV-4,mg/L,12.0
+Total Suspended Solids,LV-4,mg/L,23.0
+Total Suspended Solids,LV-4,mg/L,28.0
+Total Suspended Solids,LV-4,mg/L,13.0
+Total Suspended Solids,LV-4,mg/L,60.0
+Total Suspended Solids,LV-4,mg/L,12.0
+Total Suspended Solids,LV-4,mg/L,14.0
+Total Suspended Solids,LV-4,mg/L,6.0
+Total Suspended Solids,LV-4,mg/L,5.0
+Total Suspended Solids,LV-4,mg/L,2.0
+Total Suspended Solids,Manufactured Device,mg/L,0.5834533872540499
+Total Suspended Solids,Manufactured Device,mg/L,0.7817870988264758
+Total Suspended Solids,Manufactured Device,mg/L,0.8720503758185729
+Total Suspended Solids,Manufactured Device,mg/L,0.8972580757674515
+Total Suspended Solids,Manufactured Device,mg/L,0.9079802275202052
+Total Suspended Solids,Manufactured Device,mg/L,0.9907268318046489
+Total Suspended Solids,Manufactured Device,mg/L,1.1236351696782712
+Total Suspended Solids,Manufactured Device,mg/L,1.3584471496030954
+Total Suspended Solids,Manufactured Device,mg/L,1.4022588493407668
+Total Suspended Solids,Manufactured Device,mg/L,1.4209562681094232
+Total Suspended Solids,Retention Pond,mg/L,5.806835172001863
+Total Suspended Solids,Retention Pond,mg/L,0.8002461194992065
+Total Suspended Solids,Retention Pond,mg/L,1.2000000476837158
+Total Suspended Solids,Retention Pond,mg/L,1.5
+Total Suspended Solids,Retention Pond,mg/L,1.7000000476837158
+Total Suspended Solids,Retention Pond,mg/L,2.0
+Total Suspended Solids,Retention Pond,mg/L,2.0
+Total Suspended Solids,Retention Pond,mg/L,2.400000095367432
+Total Suspended Solids,Retention Pond,mg/L,3.0
+Total Suspended Solids,Retention Pond,mg/L,3.0
+Total Suspended Solids,Wetland Channel,mg/L,1.0
+Total Suspended Solids,Wetland Channel,mg/L,2.0
+Total Suspended Solids,Wetland Channel,mg/L,3.0
+Total Suspended Solids,Wetland Channel,mg/L,4.0
+Total Suspended Solids,Wetland Channel,mg/L,4.0
+Total Suspended Solids,Wetland Channel,mg/L,5.0
+Total Suspended Solids,Wetland Channel,mg/L,5.0
+Total Suspended Solids,Wetland Channel,mg/L,5.0
+Total Suspended Solids,Wetland Channel,mg/L,6.0
+Total Suspended Solids,Wetland Channel,mg/L,7.0
+Zinc (Zn),ED-1,ug/L,43.4
+Zinc (Zn),ED-1,ug/L,14.0
+Zinc (Zn),ED-1,ug/L,11.3
+Zinc (Zn),ED-1,ug/L,9.0
+Zinc (Zn),ED-1,ug/L,38.0
+Zinc (Zn),ED-1,ug/L,91.0
+Zinc (Zn),ED-1,ug/L,13.7
+Zinc (Zn),ED-1,ug/L,9.0
+Zinc (Zn),ED-1,ug/L,42.4
+Zinc (Zn),ED-1,ug/L,12.0
+Zinc (Zn),LV-1,ug/L,125.0
+Zinc (Zn),LV-1,ug/L,188.0
+Zinc (Zn),LV-1,ug/L,67.0
+Zinc (Zn),LV-1,ug/L,98.0
+Zinc (Zn),LV-1,ug/L,148.0
+Zinc (Zn),LV-1,ug/L,88.5
+Zinc (Zn),LV-1,ug/L,24.8
+Zinc (Zn),LV-1,ug/L,46.7
+Zinc (Zn),LV-1,ug/L,88.3
+Zinc (Zn),LV-1,ug/L,99.9
+Zinc (Zn),LV-2,ug/L,188.0
+Zinc (Zn),LV-2,ug/L,71.0
+Zinc (Zn),LV-2,ug/L,41.0
+Zinc (Zn),LV-2,ug/L,30.6
+Zinc (Zn),LV-2,ug/L,55.5
+Zinc (Zn),LV-2,ug/L,92.0
+Zinc (Zn),LV-2,ug/L,61.0
+Zinc (Zn),LV-2,ug/L,30.9
+Zinc (Zn),LV-2,ug/L,44.6
+Zinc (Zn),LV-2,ug/L,120.0
+Zinc (Zn),LV-4,ug/L,19.0
+Zinc (Zn),LV-4,ug/L,15.6
+Zinc (Zn),LV-4,ug/L,23.0
+Zinc (Zn),LV-4,ug/L,15.2
+Zinc (Zn),LV-4,ug/L,26.0
+Zinc (Zn),LV-4,ug/L,14.3
+Zinc (Zn),LV-4,ug/L,16.0
+Zinc (Zn),LV-4,ug/L,6.0
+Zinc (Zn),LV-4,ug/L,7.0
+Zinc (Zn),LV-4,ug/L,9.0
+Zinc (Zn),Manufactured Device,ug/L,1.6030575238528049
+Zinc (Zn),Manufactured Device,ug/L,2.1766485437229086
+Zinc (Zn),Manufactured Device,ug/L,2.6380175460669655
+Zinc (Zn),Manufactured Device,ug/L,3.0451525793101615
+Zinc (Zn),Manufactured Device,ug/L,3.1986595266446236
+Zinc (Zn),Manufactured Device,ug/L,3.419589322879307
+Zinc (Zn),Manufactured Device,ug/L,3.7720817653587755
+Zinc (Zn),Manufactured Device,ug/L,4.108896211856168
+Zinc (Zn),Manufactured Device,ug/L,4.4340564986555755
+Zinc (Zn),Manufactured Device,ug/L,4.688602073389356
+Zinc (Zn),Retention Pond,ug/L,3.6568279861524626
+Zinc (Zn),Retention Pond,ug/L,4.8716728931523825
+Zinc (Zn),Retention Pond,ug/L,5.891103125226382
+Zinc (Zn),Retention Pond,ug/L,6.833461455469752
+Zinc (Zn),Retention Pond,ug/L,1.0
+Zinc (Zn),Retention Pond,ug/L,1.2527339458465576
+Zinc (Zn),Retention Pond,ug/L,2.0
+Zinc (Zn),Retention Pond,ug/L,2.8880441188812256
+Zinc (Zn),Retention Pond,ug/L,4.0
+Zinc (Zn),Retention Pond,ug/L,4.8642258644104

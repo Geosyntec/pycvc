@@ -28,26 +28,7 @@ def _fix_nsqd_bacteria_units(df, unitscol='units'):
     return df
 
 
-
-class _external_source(object):
-    def boxplot(self, ax, position, xlabels, **selection_kwds):
-        for label in self.labels:
-            position += 1
-            xlabels.append(label.replace('/', r'/\\'))
-            selection_kwds[self.label_col] = label
-            effluent = self.datacollection.selectLocations(**selection_kwds)
-
-            # if there's enough BMP data, do the boxplots
-            if effluent is not None and effluent.hasData:
-                effluent.name = label
-                effluent.color = self.color
-                effluent.plot_marker = self.marker
-                effluent.boxplot(ax=ax, pos=position, patch_artist=True)
-
-        return position, xlabels
-
-
-class nsqd(_external_source):
+class nsqd:
     def __init__(self, color, marker):
         self.color = color
         self.marker = marker
@@ -152,7 +133,7 @@ class nsqd(_external_source):
         return cvcparam
 
 
-class bmpdb(_external_source):
+class bmpdb:
     def __init__(self, color, marker):
         self.color = color
         self.marker = marker
@@ -238,5 +219,17 @@ class bmpdb(_external_source):
         return bmpparam
 
 
-def loadExternalData(colors, markers):
-    return _nsqd(colors[0], markers[0]), _bmpdb(colors[1], markers[1])
+def combine_wq(wq, external, external_site_col):
+    final_cols = [
+        'parameter',
+        'units',
+        'site',
+        'concentration',
+    ]
+    exttidy = (
+        external.datacollection.tidy
+            .rename(columns={external_site_col: 'site', 'ros_res': 'concentration'})
+    )[final_cols]
+
+    tidy = pandas.concat([wq[final_cols], exttidy])
+    return tidy

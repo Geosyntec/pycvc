@@ -1,14 +1,52 @@
 from functools import partial
 from pkg_resources import resource_filename
+import os
 
 import numpy as np
 import pandas
 
+from unittest import mock
 import nose.tools as nt
-from matplotlib.testing.decorators import image_comparison
-import seaborn
+import matplotlib
+matplotlib.rcParams['backend'] = 'agg'
+
+from matplotlib import pyplot
+from matplotlib.testing.decorators import image_comparison, cleanup
 
 from pycvc import viz
+
+
+class Test_savefig(object):
+    def setup(self):
+        self.fig = pyplot.Figure()
+
+    @cleanup
+    def teardown(self):
+        pyplot.close(self.fig)
+
+    def test_png(self):
+        with mock.patch.object(self.fig, 'savefig') as _save:
+            viz.savefig(self.fig, 'test_png')
+            _save.assert_called_once_with(
+                os.path.join('output', 'img', 'test_png.png'),
+                dpi=300, transparent=True, bbox_inches='tight'
+            )
+
+    def test_pdf(self):
+        with mock.patch.object(self.fig, 'savefig') as _save:
+            viz.savefig(self.fig, 'test_pdf', asPNG=False, asPDF=True)
+            _save.assert_called_once_with(
+                os.path.join('output', 'img', 'test_pdf.pdf'),
+                dpi=300, transparent=True, bbox_inches='tight'
+            )
+
+    def test_extra_load(self):
+        with mock.patch.object(self.fig, 'savefig') as _save:
+            viz.savefig(self.fig, 'test_extra', extra='subdir', load=True)
+            _save.assert_called_once_with(
+                os.path.join('output', 'img', 'subdir', 'test_extra-load.png'),
+                dpi=300, transparent=True, bbox_inches='tight'
+            )
 
 
 @nt.nottest
@@ -86,3 +124,50 @@ def test_hydro_jointplot():
         color='g',
         save=False
     )
+
+
+@image_comparison(baseline_images=['test_external_boxplot'], extensions=['png'])
+def test_external_boxplot():
+    tidy = load_test_data('external_tidy.csv')
+    bmps = [
+        'Bioretention', 'Detention Basin',
+        'Manufactured Device', 'Retention Pond',
+        'Wetland Channel',
+    ]
+    sites = ['ED-1', 'LV-1', 'LV-2', 'LV-4']
+    params = ['Cadmium (Cd)', 'Copper (Cu)', 'Lead (Pb)', 'Zinc (Zn)']
+    fg = viz.external_boxplot(tidy, categories=bmps, sites=sites, params=params,
+                              units='ug/L')
+
+
+@image_comparison(baseline_images=['test_seasonal_boxplot'], extensions=['png'])
+def test_seasonal_boxplot():
+    tidy = load_test_data('test_wq.csv')
+    params = ['Cadmium (Cd)', 'Total Suspended Solids']
+    fg = viz.seasonal_boxplot(tidy, 'concentration', params=params, units='ug/L')
+
+
+@image_comparison(baseline_images=['test_ts_plot'], extensions=['png'])
+def test_ts_plot():
+    tidy = load_test_data('test_wq.csv', parse_dates=['samplestart', 'samplestop'])
+    plot_opts = dict(
+        sites=['ED-1', 'LV-2'],
+        params=['Cadmium (Cd)', 'Total Suspended Solids'],
+        units='mass/volume',
+        palette=None,
+        markers=['s', '>'],
+    )
+    viz.ts_plot(tidy, 'samplestart', 'concentration', **plot_opts)
+
+
+@image_comparison(baseline_images=['test_prob_plot'], extensions=['png'])
+def test_prob_plot():
+    tidy = load_test_data('test_wq.csv')
+    plot_opts = dict(
+        sites=['ED-1', 'LV-2'],
+        params=['Cadmium (Cd)', 'Total Suspended Solids'],
+        units='mass/volume',
+        palette=None,
+        markers=['s', '>'],
+    )
+    viz.prob_plot(tidy, 'concentration', **plot_opts)

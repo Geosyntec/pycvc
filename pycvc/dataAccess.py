@@ -75,17 +75,12 @@ class Database(object):
     bmpdb : cvc.external.nsqd object
         Data structure representing the Internation Stormwater BMP
         Database.
-    testing : bool (default = False)
-        When True, the data only go back to 2014 to speed up the
-        analysis.
-
     """
 
-    def __init__(self, dbfile, nsqdata=None, bmpdb=None, testing=False):
+    def __init__(self, dbfile, nsqdata=None, bmpdb=None):
         self.dbfile = dbfile
         self.nsqdata = nsqdata
         self.bmpdb = bmpdb
-        self.testing = testing
         self._sites = None
         self._wqstd = None
 
@@ -109,8 +104,7 @@ class Database(object):
     @property
     def sites(self):
         if self._sites is None:
-            with self.connect() as cnn:
-                self._sites = pandas.read_sql("select * from sites", cnn)
+            self._sites = self._run_query("select * from sites")
         return self._sites
 
     def _check_site(self, site):
@@ -187,9 +181,6 @@ class Database(object):
         if onlyPOCs:
             wq = wq[wq['parameter'].isin(info.getPOCs())]
 
-        if self.testing:
-            wq = wq[wq['samplestart'].dt.year == 2014]
-
         return wq
 
     def getHydroData(self, site, resamplePeriodMinutes=10):
@@ -234,9 +225,6 @@ class Database(object):
             }
             resampleOffset = pandas.offsets.Minute(resamplePeriodMinutes)
             hydro = hydro.resample(resampleOffset, how=resample_dict)
-
-        if self.testing:
-            hydro = hydro.loc['2014']
 
         return hydro
 
@@ -290,9 +278,6 @@ class Database(object):
         """.format(site)
 
         samples = self._run_query(qry)
-
-        if self.testing:
-            samples = samples[samples['samplestart'].dt.year == 2014]
 
         return samples
 

@@ -17,6 +17,7 @@ from wqio import utils
 
 from  pycvc import dataAccess, external
 
+ON_WINDOWS = sys.platform == 'win32'
 
 def test_fix_cvc_bacteria_units():
     df = pandas.DataFrame({
@@ -87,10 +88,12 @@ class test_database_no_ext(object):
         dbfile = resource_filename("pycvc.tests.testdata", "test.accdb")
         self.db = cvcdb = dataAccess.Database(dbfile)
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_connect(self):
         with self.db.connect() as cnn:
             nt.assert_true(isinstance(cnn, pyodbc.Connection))
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_sites(self):
         cols = ['site', 'sitename', 'total_area',
                 'impervious_area', 'bmp_area',
@@ -110,10 +113,12 @@ class test_database_no_ext(object):
 
         pdtest.assert_frame_equal(expected, self.db.sites)
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test__check_site(self):
         nt.assert_equal('ED-1', self.db._check_site('ED-1'))
         nt.assert_raises(ValueError, self.db._check_site, 'junk')
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_getWQData(self):
         ed1 = self.db.getWQData('ED-1')
         nt.assert_true(isinstance(ed1, pandas.DataFrame))
@@ -123,12 +128,14 @@ class test_database_no_ext(object):
         nt.assert_true(isinstance(lv1, pandas.DataFrame))
         nt.assert_tuple_equal(lv1.shape, (0, 11))
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_getHydroData(self):
         ed1 = self.db.getHydroData('ED-1')
         nt.assert_true(isinstance(ed1, pandas.DataFrame))
         nt.assert_tuple_equal(ed1.shape, (8784, 2))
         nt.assert_true(isinstance(ed1.index, pandas.DatetimeIndex))
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_getDrainageArea(self):
         da = self.db.getDrainageArea('ED-1')
         nt.assert_true(isinstance(da, wqio.DrainageArea))
@@ -136,12 +143,14 @@ class test_database_no_ext(object):
         nt.assert_equal(da.bmp_area, 675)
         nt.assert_equal(da.imp_area, 2578)
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_getSamples(self):
         df = self.db.getSamples('ED-1')
         nt.assert_true(isinstance(df, pandas.DataFrame))
         nt.assert_tuple_equal(df.shape, (6, 11))
 
     @attr(speed='slow')
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_wqstd(self):
         nt.assert_true(isinstance(self.db.wqstd, pandas.DataFrame))
         nt.assert_tuple_equal(self.db.wqstd.shape, (48, 4))

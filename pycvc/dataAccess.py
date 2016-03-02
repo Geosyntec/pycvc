@@ -19,6 +19,11 @@ from . import validate
 # CVC-specific wqio.events subclasses
 from .samples import GrabSample, CompositeSample, Storm
 
+try:
+    from tqdm import tqdm
+except ImportError:
+    tqdm = lambda x: x
+
 
 __all__ = ['Database', 'Site']
 
@@ -53,8 +58,8 @@ def _remove_storms_from_df(df, dates, datecol):
 
         # loop through all of the excluded dates
         for d in dates:
-            # # convert to a proper python date object
-            excl_date = wqio.utils.santizeTimestamp(d).date()
+            # convert to a proper python date object
+            excl_date = utils.santizeTimestamp(d).date()
             storm_rows = df.loc[df[datecol].dt.date == excl_date]
             excluded_storms.extend(storm_rows['storm_number'].values)
 
@@ -1058,7 +1063,7 @@ class Site(object):
         # XXX: hack to load up storm info
         _ = self.storms
 
-        for sample in self.samples[sampletype]:
+        for sample in tqdm(self.samples[sampletype]):
             if sample.storm is not None:
                 sample.templateISR = self.templateISR
                 tex = sample.compileISR(version=version, clean=True)

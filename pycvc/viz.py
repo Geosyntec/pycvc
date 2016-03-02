@@ -282,15 +282,15 @@ def hydro_histogram(hydro, valuecol='total_precip_depth', bins=None,
     if bins is None:
         bins = np.arange(5, 30, 5)
 
-    fig = utils.figutils.categorical_histogram(
+    fg = utils.figutils.categorical_histogram(
         hydro, valuecol, bins, **factoropts
     )
 
     if save:
         figname = 'HydroHistogram_{}'.format(valuecol)
-        savefig(fig, figname, extra='HydroHistogram')
+        savefig(fg.fig, figname, extra='HydroHistogram')
 
-    return fig
+    return fg
 
 
 def hydro_jointplot(hydro, site, xcol, ycol, sitecol='site',

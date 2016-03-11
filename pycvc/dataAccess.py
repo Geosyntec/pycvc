@@ -21,7 +21,7 @@ from .samples import GrabSample, CompositeSample, Storm
 
 try:
     from tqdm import tqdm
-except ImportError:
+except ImportError:    # pragma: no cover
     tqdm = lambda x: x
 
 
@@ -44,8 +44,6 @@ def _grouped_seasons(timestamp):
         return 'winter/spring'
     elif season.lower() in ['summer', 'autumn']:
         return 'summer/autumn'
-    else:
-        raise ValueError("{} is not a valid season".format(season))
 
 
 def _remove_storms_from_df(df, dates, datecol):
@@ -315,10 +313,10 @@ class Database(object):
         if self._wqstd is None:
             self._wqstd = self._run_query("select * from wq_standards")
             joincols = ['parameter', 'units']
-            if self.nsqdata is not None:
+            if self.nsqdata is not None:  # pragma: no cover
                 self._wqstd = self._wqstd.merge(self.nsqdata.medians, on=joincols)
 
-            if self.bmpdb is not None:
+            if self.bmpdb is not None:  # pragma: no cover
                 self._wqstd = self._wqstd.merge(self.bmpdb.medians, on=joincols)
 
         return self._wqstd

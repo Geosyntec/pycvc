@@ -1,0 +1,13 @@
+site,sample,sampletype,samplestart,samplestop,interval_minutes,parameter,units,detectionlimit,qualifier,concentration,season,grouped_season,year
+ED-1,ED-1-001,grab,2012-07-31 12:20:00,2012-07-31 12:24:00,10,Cadmium (Cd),ug/L,0.05,=,0.18,summer,summer/autumn,2012
+ED-1,ED-1-001,grab,2012-07-31 12:20:00,2012-07-31 12:24:00,10,Lead (Pb),ug/L,0.25,=,3.84,summer,summer/autumn,2012
+ED-1,ED-1-002,composite,2012-07-31 12:24:00,2012-07-31 16:45:00,10,Cadmium (Cd),ug/L,0.01,=,0.16,summer,summer/autumn,2012
+ED-1,ED-1-002,composite,2012-07-31 12:24:00,2012-07-31 16:45:00,10,Lead (Pb),ug/L,0.05,=,6.13,summer,summer/autumn,2012
+ED-1,ED-1-003,grab,2012-08-10 03:20:00,2012-08-10 03:24:00,30,Cadmium (Cd),ug/L,0.02,=,0.37,summer,summer/autumn,2012
+ED-1,ED-1-003,grab,2012-08-10 03:20:00,2012-08-10 03:24:00,30,Lead (Pb),ug/L,0.1,=,5.1,summer,summer/autumn,2012
+ED-1,ED-1-005,composite,2012-08-10 03:24:00,2012-08-10 20:54:00,30,Cadmium (Cd),ug/L,0.02,=,0.09,summer,summer/autumn,2012
+ED-1,ED-1-005,composite,2012-08-10 03:24:00,2012-08-10 20:54:00,30,Lead (Pb),ug/L,0.1,=,1.9,summer,summer/autumn,2012
+ED-1,ED-1-007,grab,2012-08-11 11:37:00,2012-08-11 11:41:00,10,Cadmium (Cd),ug/L,0.01,=,0.09,summer,summer/autumn,2012
+ED-1,ED-1-007,grab,2012-08-11 11:37:00,2012-08-11 11:41:00,10,Lead (Pb),ug/L,0.05,=,3.7,summer,summer/autumn,2012
+ED-1,ED-1-009,composite,2012-08-11 11:41:00,2012-08-11 17:31:00,10,Cadmium (Cd),ug/L,0.01,=,0.05,summer,summer/autumn,2012
+ED-1,ED-1-009,composite,2012-08-11 11:41:00,2012-08-11 17:31:00,10,Lead (Pb),ug/L,0.05,=,1.24,summer,summer/autumn,2012

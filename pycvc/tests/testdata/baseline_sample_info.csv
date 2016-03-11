@@ -1,0 +1,7 @@
+sample,site,samplestart,samplestop,interval_minutes,sampletype,labtype,labworkorder,collectiondate,samplingnotes,ignore
+ED-1-001,ED-1,2012-07-31 12:20:00,2012-07-31 12:24:00,10,grab,regular,B2B6446,2012-08-01 00:00:00,No errors in sampling program,False
+ED-1-002,ED-1,2012-07-31 12:24:00,2012-07-31 16:45:00,10,composite,regular,B2B6446,2012-08-01 00:00:00,Sampling program ended at bottle 19 due to power failure; program completed at 16:45 on 31 July 2012,False
+ED-1-003,ED-1,2012-08-10 03:20:00,2012-08-10 03:24:00,30,grab,regular,B2C1969,2012-08-11 00:00:00,No errors in sampling program,False
+ED-1-005,ED-1,2012-08-10 03:24:00,2012-08-10 20:54:00,30,composite,regular,B2C1969,2012-08-11 00:00:00,No errors in sampling program; program completed at 20:54 on 10 August 2012,False
+ED-1-007,ED-1,2012-08-11 11:37:00,2012-08-11 11:41:00,10,grab,regular,B2C2366,2012-08-13 00:00:00,No errors in sampling program,False
+ED-1-009,ED-1,2012-08-11 11:41:00,2012-08-11 17:31:00,10,composite,regular,B2C2366,2012-08-13 00:00:00,No errors in sampling program; program completed at 17:31on 11 August 2012,False

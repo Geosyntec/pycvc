@@ -215,6 +215,7 @@ class test_Site(object):
         nt.assert_equal(self.site.bypass_fxn, self.bypass_fxn)
         nt.assert_equal(self.site.inflow_fxn, self.inflow_fxn)
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_wqstd(self):
         pdtest.assert_frame_equal(self.site.wqstd, self.db.wqstd)
 
@@ -228,6 +229,7 @@ class test_Site(object):
     def test_drainage_area(self):
         nt.assert_equal(self.site.drainagearea.simple_method(10), 32842.5)
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_wqdata(self):
         expected_columns = ['site', 'sample', 'sampletype', 'samplestart', 'samplestop',
                             'interval_minutes', 'parameter', 'units', 'detectionlimit',
@@ -288,6 +290,7 @@ class test_Site(object):
             _ = self.site.unsampled_storms
             _gsd.assert_called_once_with(sampletype='composite')
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_storms(self):
         nt.assert_true(isinstance(self.site.storms, dict))
         nt.assert_equal(len(self.site.storms), 27)
@@ -312,6 +315,7 @@ class test_Site(object):
         for gs in self.site.samples['grab']:
             nt.assert_true(isinstance(gs, wqio.GrabSample))
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_storm_info(self):
         expected = load_test_data('baseline_storm_info.csv', parse_dates=['start_date', 'end_date'])
         expected = expected.assign(year=expected['year'].astype(str))

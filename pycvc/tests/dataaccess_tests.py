@@ -179,6 +179,7 @@ class test_Database_no_externals(object):
 
 
 class test_Site(object):
+    @nptest.dec.skipif(not ON_WINDOWS)
     def setup(self):
         dbfile = resource_filename("pycvc.tests.testdata", "test.accdb")
         self.db = dataAccess.Database(dbfile)
@@ -207,9 +208,11 @@ class test_Site(object):
             bypass_fxn=self.bypass_fxn, inflow_fxn=self.inflow_fxn,
         )
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_influent_medians(self):
         pdtest.assert_frame_equal(self.site.influentmedians, self.influent)
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_hydro_functions(self):
         nt.assert_equal(self.site.runoff_fxn, self.runoff_fxn)
         nt.assert_equal(self.site.bypass_fxn, self.bypass_fxn)
@@ -219,6 +222,7 @@ class test_Site(object):
     def test_wqstd(self):
         pdtest.assert_frame_equal(self.site.wqstd, self.db.wqstd)
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test__rating_curve_data(self):
         nt.assert_true(isinstance(self.site._rating_curve_data, pandas.DataFrame))
         nt.assert_list_equal(
@@ -226,6 +230,7 @@ class test_Site(object):
             ['head_mm', 'flow_lps']
         )
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_drainage_area(self):
         nt.assert_equal(self.site.drainagearea.simple_method(10), 32842.5)
 
@@ -240,6 +245,7 @@ class test_Site(object):
         nt.assert_tuple_equal(self.site.wqdata.shape, expected_shape)
         self.site.wqdata.to_csv("pycvc/tests/testdata/baseline_wqdata.csv", index=False)
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_hydrodata(self):
         expected = load_test_data('baseline_hydrodata.csv')
         pdtest.assert_frame_equal(
@@ -247,12 +253,14 @@ class test_Site(object):
             check_dtype=False
         )
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_sample_info(self):
         datecols = ['samplestart', 'samplestop', 'collectiondate']
         expected = load_test_data('baseline_sample_info.csv', parse_dates=datecols)
         self.site.sample_info['samplestart']
         pdtest.assert_frame_equal(self.site.sample_info, expected)
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_grabdates(self):
         dates = pandas.Series(map(
             pandas.Timestamp,
@@ -260,6 +268,7 @@ class test_Site(object):
         ]), index=[0, 2, 4], name='samplestart')
         pdtest.assert_series_equal(self.site.grabdates, dates)
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_compdates(self):
         dates = pandas.Series(map(
             pandas.Timestamp,
@@ -267,6 +276,7 @@ class test_Site(object):
         ]), index=[1, 3, 5], name='samplestart')
         pdtest.assert_series_equal(self.site.compdates, dates)
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_compendtimees(self):
         dates = pandas.Series(map(
             pandas.Timestamp,
@@ -274,17 +284,21 @@ class test_Site(object):
         ]), index=[1, 3, 5], name='samplestop')
         pdtest.assert_series_equal(self.site.compendtimes, dates)
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_max_flow(self):
         nt.assert_equal(self.site.max_flow, 10.957)
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_max_inflow(self):
         nt.assert_true(np.isnan(self.site.max_inflow))
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_sampled_storms(self):
         with mock.patch.object(self.site, '_get_storms_with_data') as _gsd:
             _ = self.site.sampled_storms
             _gsd.assert_called_once_with(sampletype='composite')
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_unsampled_storms(self):
         with mock.patch.object(self.site, '_get_storms_without_data') as _gsd:
             _ = self.site.unsampled_storms
@@ -297,12 +311,14 @@ class test_Site(object):
         for sn in self.site.storms:
             nt.assert_true(isinstance(self.site.storms[sn], wqio.Storm))
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_all_samples(self):
         nt.assert_true(isinstance(self.site.all_samples, list))
         nt.assert_equal(len(self.site.all_samples), 6)
         for s in self.site.all_samples:
             nt.assert_true(isinstance(s, wqio.GrabSample) or isinstance(s, wqio.CompositeSample))
 
+    @nptest.dec.skipif(not ON_WINDOWS)
     def test_sample(self):
         nt.assert_list_equal(
             sorted(list(self.site.samples.keys())),

@@ -29,7 +29,7 @@ def _fix_nsqd_bacteria_units(df, unitscol='units'):
 
 
 class nsqd:
-    def __init__(self, color, marker):
+    def __init__(self, color, marker, datafile=None):
         self.color = color
         self.marker = marker
         self._data = None
@@ -42,6 +42,8 @@ class nsqd:
             'epa_rain_zone', 'location_code', 'station_name', 'primary_landuse',
             'start_date', 'season', 'station', 'parameter', 'units',
         ]
+        self.datafile = datafile
+        self.db = pynsqd.NSQData(datapath=self.datafile)
 
     @property
     def landuses(self):
@@ -56,69 +58,79 @@ class nsqd:
         if self._data is None:
             params = [p['nsqdname'] for p in POC_dicts]
             self._data = (
-                pynsqd.NSQData()
-                      .data
-                      .query("primary_landuse != 'Unknown'")
-                      .query("parameter in @params")
-                      .query("fraction == 'Total'")
-                      .query("epa_rain_zone == 1")
-                      .assign(station='outflow')
-                      .assign(cvcparam=lambda df: df['parameter'].apply(self._get_cvc_parameter))
-                      .assign(season=lambda df: df['start_date'].apply(wqio.utils.getSeason))
-                      .drop('parameter', axis=1)
-                      .rename(columns={'cvcparam': 'parameter'})
-                      .groupby(by=self.index_cols)
-                      .first()
-                      .reset_index()
-                      .pipe(_fix_nsqd_bacteria_units)
+                self.db
+                    .data
+                    .query("primary_landuse != 'Unknown'")
+                    .query("parameter in @params")
+                    .query("fraction == 'Total'")
+                    .query("epa_rain_zone == 1")
+                    .assign(cvcparam=lambda df: df['parameter'].apply(self._get_cvc_parameter))
+                    .drop('parameter', axis=1)
+                    .rename(columns={'cvcparam': 'parameter'})
+                    .groupby(by=self.index_cols)
+                    .first()
+                    .reset_index()
+                    .pipe(_fix_nsqd_bacteria_units)
             )
         return self._data
+
+
+    def _make_dc(self, which):
+        _dc_map = {
+            'overall': ['units', 'primary_landuse'],
+            'seasonal': ['units', 'primary_landuse', 'season'],
+        }
+
+        dc = wqio.DataCollection(
+            self.data.set_index(self.index_cols),
+            ndval='<',
+            othergroups=_dc_map[which],
+            paramcol='parameter'
+        )
+
+        return dc
+
+
+    def _get_medians(self, which):
+        _med_dict = {
+            'overall': self.datacollection.medians,
+            'seasonal': self.seasonal_datacollection.medians,
+        }
+
+        medians = (
+            _med_dict[which.lower()]
+                ['outflow']
+                .xs('Residential', level='primary_landuse')
+                .pipe(np.round, 3)
+                .reset_index()
+                .rename(columns={'stat': 'NSQD Medians'})
+        )
+
+        return medians
 
     @property
     def datacollection(self):
         if self._datacollection is None:
-            groupcols = ['units', 'primary_landuse']
-            dc = wqio.DataCollection(self.data.set_index(self.index_cols), ndval='<',
-                                     othergroups=groupcols, paramcol='parameter')
-
-            self._datacollection = dc
+            self._datacollection = self._make_dc('overall')
         return  self._datacollection
 
     @property
     def medians(self):
         if self._medians is None:
-            self._medians = (
-                self.datacollection
-                    .medians['outflow']
-                    .xs(['Residential'], level=['primary_landuse'])
-                    .pipe(np.round, 3)
-                    .reset_index()
-                    .rename(columns={'stat': 'NSQD Medians'})
-                )
+            self._medians = self._get_medians('overall')
 
         return self._medians
 
     @property
     def seasonal_datacollection(self):
         if self._seasonal_datacollection is None:
-            groupcols = ['units', 'primary_landuse', 'season']
-            dc = wqio.DataCollection(self.data.set_index(self.index_cols), ndval='<',
-                                     othergroups=groupcols, paramcol='parameter')
-
-            self._seasonal_datacollection = dc
+            self._seasonal_datacollection = self._make_dc('seasonal')
         return  self._seasonal_datacollection
 
     @property
     def seasonal_medians(self):
         if self._seasonal_medians is None:
-            self._seasonal_medians = (
-                self.seasonal_datacollection
-                    .medians['outflow']
-                    .xs(['Residential'], level=['primary_landuse'])
-                    .pipe(np.round, 3)
-                    .reset_index()
-                    .rename(columns={'stat': 'NSQD Median'})
-                )
+            self._seasonal_medians = self._get_medians('seasonal')
 
         return self._seasonal_medians
 
@@ -134,7 +146,7 @@ class nsqd:
 
 
 class bmpdb:
-    def __init__(self, color, marker):
+    def __init__(self, color, marker, datafile=None):
         self.color = color
         self.marker = marker
         self.paramnames = [p['bmpname'] for p in POC_dicts]
@@ -145,8 +157,11 @@ class bmpdb:
             lambda x: x['conc_units']['plain'] == 'CFU/100 mL', POC_dicts
         ))
 
+        self.datafile = datafile
         self.table, self.db = pybmpdb.getSummaryData(
-            catanalysis=False, astable=True,
+            dbpath=self.datafile,
+            catanalysis=False,
+            astable=True,
             parameter=self.paramnames,
             category=bmpcats_to_use,
             epazone=1,

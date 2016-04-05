@@ -22,7 +22,7 @@ def savefig(fig, figname, extra=None, asPNG=True, asPDF=False, load=False):
     extra : string or None (default)
         Relative path to subdirectories below './output/img' where the
         figure will be saved.
-    as[PNG|PDF] : bool, optional (default = True)
+    asPNG, asPDF : bool, optional (defaults: True, False, respectively)
         Toggles if the figure will be saved as a .png and/or .pdf file.
         If both are False, the figure is not saved in any form.
     load : bool, optional (default = False)
@@ -82,7 +82,8 @@ def _reduction_range_bars(y, ylow, yhigh, sitecol, data=None, **kwargs):
 
 
 def reduction_plot(df, params, paramcol, sitecol, xvaluecol, leg_loc, **load_cols):
-    """ Draws the percent reduction bar plots with the upper and lower
+    """
+    Draws the percent reduction bar plots with the upper and lower
     estimates.
 
     Parameters
@@ -114,9 +115,13 @@ def reduction_plot(df, params, paramcol, sitecol, xvaluecol, leg_loc, **load_col
         The FaceGrid on which the data have been drawn.
 
     """
+
+    # pull out columns from the kwargs
     lower = load_cols.pop('lower', 'load_reduction_lower')
     reduction = load_cols.pop('reduction', 'load_reduction')
     upper = load_cols.pop('upper', 'load_reduction_upper')
+
+    # draw the plot
     fg = seaborn.factorplot(
         x=xvaluecol, y=reduction, aspect=1.6, size=2, hue=sitecol,
         col=paramcol, col_order=params, col_wrap=2,
@@ -124,27 +129,42 @@ def reduction_plot(df, params, paramcol, sitecol, xvaluecol, leg_loc, **load_col
         margin_titles=True, legend=False
     )
 
+    # add a legend
     fg.add_legend(ncol=2)
     fg._legend.set_bbox_to_anchor(leg_loc)
+
+    # draw the error bars
     fg.map_dataframe(_reduction_range_bars, reduction, lower, upper, sitecol)
 
     return fg
 
 
-def hydro_pairplot(hydro, site, sitecol='site', by='season', palette=None, save=True):
-    """ Creates a pairplot of hydrologic quantities.
+def hydro_pairplot(hydro, site, sitecol='site', by='season',
+                   palette=None, save=True):
+    """
+    Creates a pairplot of hydrologic quantities.
 
     Parameters
     ----------
+    hydro : pandas.DataFrame
+        A tidy dataframe of the hydrologic info of storms.
+    site : string
+        The ID string of the site to be plotted (e.g., 'ED-1' for Elm
+        Drive)
+    sitecol : string
+        The label of the column in ``hydro`` that contains ``site``.
     by : string, optional (default = 'season')
         The column in Site.storm_info that defines how the data
         should be grouped.
-    palette : seaborn.color_palette or None (default)
-        Color scheme for the plot.
+    palette : seaborn.color_palette, optional
+        Color scheme for the plot. Defaults to the current palette.
+    save : bool, optional (False)
+        If True, the figure is automatically saved via :func:savefig
+        in the default locations ('output/img/HydroPairPlot')
 
     Returns
     -------
-    None
+    pg : seaborn.PairGrid
 
     See Also
     --------
@@ -152,6 +172,7 @@ def hydro_pairplot(hydro, site, sitecol='site', by='season', palette=None, save=
 
     """
 
+    # full list of columns for the dataframe
     cols = [
         'site',
         'antecedent_days',
@@ -165,6 +186,7 @@ def hydro_pairplot(hydro, site, sitecol='site', by='season', palette=None, save=
         'Has outflow?'
     ]
 
+    # just the numeric columns to be plotted
     var_cols = [
         'antecedent days',
         'duration hours',
@@ -172,6 +194,8 @@ def hydro_pairplot(hydro, site, sitecol='site', by='season', palette=None, save=
         'total precip depth',
         'outflow mm',
     ]
+
+    # clean up column names, drop irrelevant columns
     sinfo = (
         hydro[hydro[sitecol] == site]
             .rename(columns={'has_outflow': 'Has outflow?', 'grouped_season': 'Seasons'})
@@ -220,19 +244,27 @@ def hydro_pairplot(hydro, site, sitecol='site', by='season', palette=None, save=
 
     if save:
         figname = '{}-HydroPairPlot_by_{}'.format(site, by)
-        _savefig(pg.fig, figname, extra='HydroPairPlot')
+        savefig(pg.fig, figname, extra='HydroPairPlot')
 
     return pg
 
 
 def hydro_histogram(hydro, valuecol='total_precip_depth', bins=None,
                     save=True, **factoropts):
-    """ Plot a faceted, categorical histogram of storms.
+    """
+    Plot a faceted, categorical histogram of storms.
 
-    valuecol : str, optional
+    Parameters
+    ----------
+    hydro : pandas.DataFrame
+        A tidy dataframe of the hydrologic info of storms.
+    valuecol : str, optional ('total_precip_depth')
         The name of the column that should be categorized and plotted.
     bins : array-like, optional
-        The right-edges of the histogram bins.
+        The edges of the histogram bins.
+    save : bool, optional (False)
+        If True, the figure is automatically saved via :func:savefig
+        in the default locations ('output/img/HydroHistogram')
     factoropts : keyword arguments, optional
         Options passed directly to seaborn.factorplot
 
@@ -250,36 +282,45 @@ def hydro_histogram(hydro, valuecol='total_precip_depth', bins=None,
     if bins is None:
         bins = np.arange(5, 30, 5)
 
-    fig = utils.figutils.categorical_histogram(
+    fg = utils.figutils.categorical_histogram(
         hydro, valuecol, bins, **factoropts
     )
 
     if save:
         figname = 'HydroHistogram_{}'.format(valuecol)
-        _savefig(fig, figname, extra='HydroHistogram')
+        savefig(fg.fig, figname, extra='HydroHistogram')
 
-    return fig
+    return fg
 
 
 def hydro_jointplot(hydro, site, xcol, ycol, sitecol='site',
                     color=None, conditions=None, one2one=True,
                     save=True):
-    """ Creates a joint distribution plot of two hydrologic
-    quantities.
+    """
+    Creates a joint distribution plot of two hydrologic quantities.
 
     Parameters
     ----------
-    xcol, ycol : string
-        Column names found in Site.storm_info
+    hydro : pandas.DataFrame
+        A tidy dataframe of the hydrologic info of storms.
+    site : string
+        The ID string of the site to be plotted (e.g., 'ED-1' for Elm
+        Drive)
+    sitecol, xcol, ycol : string
+        Column names found in ``hydro`` that specify the columns
+        containing the site IDs, x-values, and y-values, respectively.
     conditions : string or None (default)
-        Query strings to be passed to Site.storm_info.query(...)
+        Query strings to be passed to ``hydro.query(...)``
     one2one : bool, optional (default = True)
         Shows the 1:1 line on the scatter portion of the joint
         distribution plot.
+    save : bool, optional (False)
+        If True, the figure is automatically saved via :func:savefig
+        in the default locations ('output/img/HydroJoint')
 
     Returns
     -------
-    None
+    jg : seaborn.JointGrid
 
     See Also
     --------
@@ -306,18 +347,71 @@ def hydro_jointplot(hydro, site, xcol, ycol, sitecol='site',
     )
 
     if save:
-        figname = '{}-HydroJoinPlot_{}_vs_{}'.format(site, xcol, ycol)
-        _savefig(jg.fig, figname, extra='HydroJointPlot')
+        figname = '{}-HydroJointPlot_{}_vs_{}'.format(site, xcol, ycol)
+        savefig(jg.fig, figname, extra='HydroJointPlot')
 
 
-def external_boxplot(tidy, sites=None, categories=None, params=None,
+def external_boxplot(combined, sites=None, categories=None, params=None,
                      units=None, palette=None):
+    """
+    Faceted box and whisker plots of site data with external (i.e.,
+    NSQD or BMPDB data). Since we're comparing CVC with external data,
+    only concentrations can be plotted (i.e., loads from BMPDB and NSQD
+    are not available).
+
+    Parameters
+    ----------
+    combined : pandas.DataFrame
+        A single tidy dataframe of both the CVC and external data.
+
+        .. note ::
+           BMP categories or NSQD landuses should be stored in the
+           `'site'` column of the dataframe.
+
+    sites : list of string
+        The CVC sites to include in the plot.
+    categories : list of string
+        The NSQD landuses or BMPDB categories to include in the plot.
+    params : list of string
+        The parameters to include in the plots.
+    units : string
+        The units of measure of the quantity being plotted.
+    palette : seaborn.color_palette, optional
+        Color scheme for the plot. Defaults to the current palette.
+
+    Returns
+    -------
+    fg : seaborn.FacetGrid
+
+    Examples
+    --------
+    >>> import pandas
+    >>> import pycvc
+    >>> bmpdb = pycvc.external.bmpdb('black', 'D')
+    >>> tidy_file = 'output/tidy/wq_simple.csv'
+    >>> datecols = ['start_date', 'end_date', 'samplestart', 'samplestop']
+    >>> wq = (
+    ...     pandas.read_csv(tidy_file, parse_dates=datecols)
+    ...         .pipe(pycvc.summary.classify_storms, 'total_precip_depth')
+    ...         .pipe(pycvc.summary.remove_load_data_from_storms, ['2013-07-08'], 'start_date')
+    ... )
+    >>> combined = pycvc.external.combine_wq(wq, bmpdb, 'category')
+    >>> pycvc.viz.external_boxplot(
+    ...     tidy=combined,
+    ...     sites=['ED-1', 'LV-2', 'LV-4'],
+    ...     categories=['Bioretention', 'Detention Basin', 'Wetland Channel'],
+    ...     palette='Blues',
+    ...     params=['Cadmium (Cd)', 'Copper (Cu)', 'Lead (Pb)', 'Zinc (Zn)'],
+    ...     units='μg/L'
+    ... )
+
+    """
 
     x_vals = np.hstack([sites, categories])
 
     subset = (
-        tidy.query("site in @x_vals")
-            .query("parameter in @params")
+        combined.query("site in @x_vals")
+                .query("parameter in @params")
     )
     fg = seaborn.factorplot(
         data=subset, x='site', y='concentration',
@@ -331,18 +425,106 @@ def external_boxplot(tidy, sites=None, categories=None, params=None,
     return fg
 
 
-def seasonal_boxplot(wq, ycol, params, units):
+def seasonal_boxplot(wq, ycol, params, units, palette=None):
+    """
+    Faceted box and whisker plots of site data grouped by the season
+    during which the sample was collected.
+
+    Parameters
+    ----------
+    wq : pandas.DataFrame
+        A single tidy dataframe of the CVC water quality data.
+    ycol : string
+        The label of the column you wish to plot in the boxplots (e.g.,
+        `'concentration'` or `'load_outflow'`).
+    params : list of string
+        The parameters to include in the plots.
+    units : string
+        The units of measure of the quantity being plotted.
+    palette : seaborn.color_palette, optional
+        Color scheme for the plot. Defaults to 'BrBG_r' (minty-green for
+        winter/spring to brown for summer/autumn).
+
+    Returns
+    -------
+    fg : seaborn.FacetGrid
+
+    Examples
+    --------
+    >>> import pycvc
+    >>> tidy_file = 'output/tidy/wq_simple.csv'
+    >>> wq = (
+    ...     pandas.read_csv(tidy_file, parse_dates=['start_date', 'end_date'])
+    ...         .pipe(pycvc.summary.classify_storms, 'total_precip_depth')
+    ...         .pipe(pycvc.summary.remove_load_data_from_storms, ['2013-07-08'], 'start_date')
+    ... )
+    >>> params = ['Cadmium (Cd)', 'Copper (Cu)', 'Lead (Pb)', 'Zinc (Zn)']
+    >>> bp = pycvc.viz.seasonal_boxplot(wq, 'concentration', params, 'μg/L')
+
+    """
+
+    if palette is None:
+        palette = 'BrBG_r'
+
     fg = seaborn.factorplot(
         data=wq.query('parameter in @params'), x='site', y='concentration',
         col='parameter', col_wrap=2, col_order=params,
         hue='season', hue_order=['winter', 'spring', 'summer', 'autumn'],
-        kind='box', palette='BrBG_r', aspect=2, size=3, sharey=False
+        kind='box', palette=palette, aspect=2, size=3, sharey=False
     )
+
     _format_facetgrid(fg, units)
+
     return fg
 
 
-def ts_plot(wq, datecol, ycol, sites, params, units, palette, markers):
+def ts_plot(wq, datecol, ycol, sites, params, units,
+            palette=None, markers=None):
+    """
+    Faceted time series plots of CVC water quality data.
+
+    Parameters
+    ----------
+    wq : pandas.DataFrame
+        A single tidy dataframe of the CVC water quality data.
+    datecol, ycol : string
+        The label of the column with the dates and the column you wish
+        to plot as the y-values (e.g., `'concentration'` or
+        `'load_outflow'`).
+    sites : list of string
+        The CVC sites to include in the plot.
+    params : list of string
+        The parameters to include in the plots.
+    units : string
+        The units of measure of the quantity being plotted.
+    palette : seaborn.color_palette, optional
+        Color scheme for the plot. Defaults to 'BrBG_r' (minty-green for
+        winter/spring to brown for summer/autumn).
+    markers : list of string, optional
+        List of valid matplotlib markers. This should have the same
+        number of elements as ``sites``.
+
+    Returns
+    -------
+    fg : seaborn.FacetGrid
+
+    Examples
+    --------
+    >>> import pycvc
+    >>> tidy_file = 'output/tidy/wq_simple.csv'
+    >>> wq = (
+    ...     pandas.read_csv(tidy_file, parse_dates=['start_date', 'end_date'])
+    ...         .pipe(pycvc.summary.classify_storms, 'total_precip_depth')
+    ...         .pipe(pycvc.summary.remove_load_data_from_storms, ['2013-07-08'], 'start_date')
+    ... )
+    >>> params = ['Cadmium (Cd)', 'Copper (Cu)', 'Lead (Pb)', 'Zinc (Zn)']
+    >>> sites = ['ED-1', 'LV-2', 'LV-4']
+    >>> ts = pycvc.viz.ts_plot(wq, 'samplestart', 'concentration',
+    ...                        sites, params, 'μg/L',
+    ...                        markers=['o', 's', '^'])
+
+    """
+
     subset = wq.query("site in @sites and parameter in @params").dropna(subset=[ycol])
     fg = seaborn.FacetGrid(
         subset, aspect=2, size=3, sharey=False,
@@ -354,7 +536,50 @@ def ts_plot(wq, datecol, ycol, sites, params, units, palette, markers):
     return fg
 
 
-def prob_plot(wq, ycol, sites, params, units, palette, markers):
+def prob_plot(wq, ycol, sites, params, units, palette=None, markers=None):
+    """
+    Faceted probability plots of CVC water quality data.
+
+    Parameters
+    ----------
+    wq : pandas.DataFrame
+        A single tidy dataframe of the CVC water quality data.
+    ycol : string
+        The label of the column you wish to plot as the y-values (e.g.,
+        `'concentration'` or `'load_outflow'`).
+    sites : list of string
+        The CVC sites to include in the plot.
+    params : list of string
+        The parameters to include in the plots.
+    units : string
+        The units of measure of the quantity being plotted.
+    palette : seaborn.color_palette, optional
+        Color scheme for the plot. Defaults to 'BrBG_r' (minty-green for
+        winter/spring to brown for summer/autumn).
+    markers : list of string, optional
+        List of valid matplotlib markers. This should have the same
+        number of elements as ``sites``.
+
+    Returns
+    -------
+    fg : seaborn.FacetGrid
+
+    Examples
+    --------
+    >>> import pycvc
+    >>> tidy_file = 'output/tidy/wq_simple.csv'
+    >>> wq = (
+    ...     pandas.read_csv(tidy_file, parse_dates=['start_date', 'end_date'])
+    ...         .pipe(pycvc.summary.classify_storms, 'total_precip_depth')
+    ...         .pipe(pycvc.summary.remove_load_data_from_storms, ['2013-07-08'], 'start_date')
+    ... )
+    >>> params = ['Cadmium (Cd)', 'Copper (Cu)', 'Lead (Pb)', 'Zinc (Zn)']
+    >>> sites = ['ED-1', 'LV-2', 'LV-4']
+    >>> pp = pycvc.viz.prob_plot(wq, concentration', sites, params,
+    ...                          'μg/L', markers=['o', 's', '^'])
+
+    """
+
     def _pp(x, **kwargs):
         ax = plt.gca()
         qntls, xr = stats.probplot(x, fit=False)
@@ -375,7 +600,10 @@ def prob_plot(wq, ycol, sites, params, units, palette, markers):
     return fg
 
 
-def _format_facetgrid(fg, units, xlabels=None):
+def _format_facetgrid(fg, units, yval='Concentration', xlabels=None):
+    """
+    Rotates the ticklabels, sets the yscale='log', etc
+    """
     fg.set_xticklabels(
         labels=xlabels,
         rotation=30,
@@ -384,5 +612,5 @@ def _format_facetgrid(fg, units, xlabels=None):
     )
     fg.set(yscale='log')
     fg.set_xlabels('')
-    fg.set_axis_labels(x_var='', y_var='Concentration ({})'.format(units))
+    fg.set_axis_labels(x_var='', y_var='{} ({})'.format(yval, units))
     return fg

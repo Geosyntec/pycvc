@@ -149,8 +149,7 @@ class _WQSample_Mixin(wqio.core.samples._basic_wq_sample):
             ]
             wqtable = wqtable[cols_to_keep].drop_duplicates()
 
-            # pragma: no cover
-            if writeToFiles:
+            if writeToFiles:  # pragma: no cover
                 csvpath = os.path.join('output', 'csv', self.wq_tex_table + '.csv')
                 texpath = os.path.join('output', 'tex', 'ISR', self.wq_tex_table + '.tex')
 
@@ -303,7 +302,7 @@ class _WQSample_Mixin(wqio.core.samples._basic_wq_sample):
                                  loc='lower right')
         leg.get_frame().set_zorder(25)
 
-        viz._savefig(fig, self.storm_figure, extra='Storm', asPDF=True)
+        viz.savefig(fig, self.storm_figure, extra='Storm', asPDF=True)
         return fig
 
     def compileISR(self, version='draft', clean=False):
@@ -430,12 +429,6 @@ class Storm(wqio.Storm):
     def total_outflow_volume(self, value):
         self._total_outflow_volume = value
 
-    @np.deprecate
-    def _general_table(self, name):
-        """ Creates a simple string of a table of the basic storm info
-        """
-
-        return None
 
     def _hydro_table(self, name):
         """
@@ -485,95 +478,3 @@ class Storm(wqio.Storm):
         ).format(**storm_values)
 
         return table
-
-    @np.deprecate
-    def wideTableHeaders(self):
-        wide_header = (
-            '"Storm Date",'
-            '"Sample Date",'
-            '"Antecedent Dry Period (days)",'
-            '"Event Duration (hr)",'
-            '"Peak Precipitation Intensity (mm/hr)",'
-            '"Total Precipitation (mm)",'
-            '"Peak Effluent Flow (L/s)",'
-            '"Total Estimated Influent Volume (L)",'
-            '"Total Effluent Volume (L)",'
-            '"Centroid Lag Time (hr)",'
-            '"Estimated Runoff Volume Reduction (L)",'
-            '"Estimated Runoff Volume Reduction (%)"\n'
-        )
-        return wide_header
-
-    @np.deprecate
-    def wideTableLine(self):
-        """ Creates a line to the "wide" table summarizing all storms
-        for a site.
-
-        Parameters
-        ----------
-        None
-
-        Writes
-        ------
-        None
-
-        Returns
-        -------
-        txt : string
-            CSV string for a single row in the larger summary table
-
-        """
-
-        txt = '"{0:%Y-%m-%d}","{1}",{2:0.1f},"{3:,.0f}",' \
-              '{4:0.1f},{5:0.1f},{6:0.1f},'\
-              '"{7:,.0f}","{8:,.0f}","{9:,.0f}",' \
-              '"{10:,.0f}","{11}%"\n'.format(
-                self.storm_start, utils.stringify(self.sampledate, '%s'),
-                self.antecedent_duration, self.duration,
-                self.peak_intensity, self.total_precip,
-                self.peak_flow, self.influent_volume,
-                self.total_volume, self.lag,
-                self.volume_reduction_liters,
-                utils.stringify(self.volume_reduction_percent, '%d')
-              )
-        return txt
-
-    @np.deprecate
-    def thinTableHeaders(self):
-        thin_header = (
-            '"Storm Date",'
-            '"Total Precipitation (mm)",'
-            '"Lag Time (min)",'
-            '"Total Estimated Influent Volume (L)",'
-            '"Total Effluent Volume (L)",'
-            '"Estimated Peak Runoff (L/s)",'
-            '"Peak Effluent Flow (L/s)"\n'
-        )
-        return thin_header
-
-    @np.deprecate
-    def thinTableLine(self):
-        """ Creates a line to the "thin" table summarizing all storms
-        for a site.
-
-        Parameters
-        ----------
-        None
-
-        Writes
-        ------
-        None
-
-        Returns
-        -------
-        txt : string
-            CSV string for a single row in the larger summary table
-
-        """
-
-        txt = '%s,%0.1f,%0.0f,%0.0f,%0.0f,%0.1f,%0.1f' % (
-            self.storm_start, self.total_precip, self.lag,
-            self.influent_volume, self.total_volume, self.peak_flow,
-            self.peak_influent
-        )
-        return txt

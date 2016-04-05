@@ -22,10 +22,62 @@ from . import validate
 
 
 def collect_tidy_data(sites, fxn):
+    """
+    Collects and compiles tidy data from site objects
+
+    Parameters
+    ----------
+    sites : list of pycvc.dataAccess.Site
+    fxn : callable
+        Function to extract tidy data from the site.
+
+    Returns
+    -------
+    tidy : pandas.DataFrame
+
+    Examples
+    --------
+    >>> # assume we have site objects called ED1, LV1, LV2, and LV4
+    >>> from pycvc import summary
+    >>> sites = [ED1, LV1, LV2, LV4]
+
+    >>> # compile the water quality data
+    >>> wq = summary.collect_tidy_data(sites, lambda s: s.tidy_wq)
+
+    >>> # compile the hydrologic summaries
+    >>> hydro = summary.collect_tidy_data(sites, lambda s: s.tidy_hydro)
+
+    """
+
     return pandas.concat([fxn(site) for site in sites], ignore_index=True)
 
 
 def labels_from_bins(bins, units=None):
+    """
+    Computes labels from a quantized column based on the bin edges.
+    Note that if you have open intervals at the extremes, you should
+    include arbitrary bounds (e.g., `np.inf` for the upper bound,
+    zero for the lower bound).
+
+    Parameters
+    ----------
+    bins : sequence of floats
+        Edges of the quantization bins.
+    units : string, optional
+        Units of measure to be appended to the labels.
+
+    Returns
+    -------
+    labels : list of string
+
+    Examples
+    --------
+    >>> from pycvc import summary
+    >>> summary.labels_from_bins([0, 5, 10, 15, np.inf], units='feet')
+    ['<5 feet', '5 - 10 feet', '10 - 15 feet', '>15 feet']
+
+    """
+
     labels = []
     for left, right in zip(bins[:-1], bins[1:]):
         if left == 0:
@@ -41,48 +93,218 @@ def labels_from_bins(bins, units=None):
     return list(labels)
 
 
-def classify_storms(df, valuecol, newcol='storm_bin', bins=None):
+def classify_storms(hydro, valuecol, newcol='storm_bin', bins=None):
+    """
+    Classifies storm depths into 5-mm bins (i.e., <5 mm, 10 - 15 mm).
+
+    Parameters
+    ----------
+    hydro : pandas.DataFrame
+        Tidy dataframe of the hydrologic quantities of each storm.
+    valuecol : string
+        The label of the column you are classifying.
+    newcol : string, optional (storm_bin)
+        The label of the column where the classifications will be
+        saved in `tidy`
+    bins : sequence of floats
+        Edges of the quantization bins.
+    inplace : bool, optional (False)
+        Toggles executing the operation in place. When False, a modified
+        copy of ``hydro`` is returned. Otherwise, ``None`` is returned
+        and the original dataframe is modified.
+
+    Returns
+    -------
+    binned : pandas.DataFrame
+        A modified *copy* of ``hydro`` with the new column.
+
+    Examples
+    --------
+    >>> import numpy
+    >>> import pandas
+    >>> from pycvc import summary
+    >>> hydro = pandas.DataFrame({'storm': [1, 2, 3, 4], 'depth': [2.5, 6, 10, 23]})
+    >>> bins = [0, 5, 10, 20, numpy.inf]
+    >>> summary.classify_storms(hydro, 'Depth', newcol='depth_bin', bins=bins)
+       depth  storm  depth_bin
+    0    2.5      1      <5 mm
+    1    6.0      2  5 - 10 mm
+    2   10.0      3  5 - 10 mm
+    3   23.0      4     >20 mm
+
+    """
+
     if bins is None:
         bins = [0, 5, 10, 15, 20, 25, np.inf]
 
     labels = labels_from_bins(bins=bins, units='mm')
-    df[newcol] = pandas.cut(df[valuecol], bins=bins, labels=labels)
-    return df
+    classes =  pandas.cut(hydro[valuecol], bins=bins, labels=labels)
+    return hydro.assign(**{newcol: classes})
 
 
 def prevalence_table(wq, rescol='concentration', groupby_col=None):
-    """ Returns a sample prevalence table for the given sample type.
+    """
+    Returns a prevalence table for water quality data collected in
+    composite samples. At a minimum, the data are grouped by the
+    ``'site'`` and ``'parameter'`` columns.
+
+    Parameters
+    ----------
+    wq : pandas.DataFrame
+        Tidy dataframe of the CVC water quality dataset.
+    rescol : string, optional ('concentration')
+        The label of the column in ``tidy`` to be analyzed
+    groupby_col : string, optional
+        Optional string that defines how results should be grouped
+        temporally. Valid options are "season", "grouped_season",
+        and "year". Default behavior does no temporal grouping.
+
+    Returns
+    -------
+    prevalence : pandas.DataFrame
+
+    Examples
+    --------
+    >>> import pandas
+    >>> from pycvc import summary
+    >>> tidy_file = 'output/tidy/wq_simple.csv'
+    >>> wq = (
+    ...     pandas.read_csv(tidy_file, parse_dates=['start_date', 'end_date'])
+    ...         .pipe(summary.classify_storms, 'total_precip_depth')
+    ...         .pipe(summary.remove_load_data_from_storms, ['2013-07-08'], 'start_date')
+    ... )
+    >>> prevalence = summary.prevalence_table(wq, 'concentration', 'Season')
+
     """
     by = ['site', 'parameter']
     if groupby_col is not None:
         by.append(validate.groupby_col(groupby_col))
 
-    pt = (
+    prevalence = (
         wq.query("sampletype == 'composite'")
             .groupby(by=by)
             .count()[rescol]
             .unstack(level='parameter')
             .reset_index()
     )
-    return pt
+    return prevalence
 
 
 def remove_load_data_from_storms(wq, stormdates, datecol):
+    """
+    Sets all columns prefixed with "load_" to null (NaN) values for
+    certain storm dates.
+
+    Parameters
+    ----------
+    wq : pandas.DataFrame
+        Tidy dataframe of the CVC water quality dataset.
+    stormdates : list of date strings (format = 'yyyy-mm-dd')
+        List of stings of dates whose load values should be set to
+        null/NaN.
+    datecol : string
+        The label of the column containing the dates.
+
+    Returns
+    -------
+    cleaned_wq : pandas.DataFrame
+
+    Examples
+    --------
+    >>> import pandas
+    >>> from pycvc import summary
+    >>> tidy_file = 'output/tidy/wq_simple.csv'
+    >>> wq = pandas.read_csv(tidy_file, parse_dates=['start_date', 'end_date'])
+    >>> wq = summary.remove_load_data_from_storms(wq, ['2013-07-08'], 'start_date')
+    """
+
     if np.isscalar(stormdates):
         stormdates = [stormdates]
 
     cols_to_clean = wq.select(lambda c: c.startswith('load_'), axis=1).columns
     row_to_clean = wq[datecol].dt.date.isin(stormdates)
-    wq = wq.copy()
-    wq.loc[row_to_clean, cols_to_clean] = np.nan
-    return wq
+    cleaned_wq = wq.copy()
+    cleaned_wq.loc[row_to_clean, cols_to_clean] = np.nan
+    return cleaned_wq
 
 
 def pct_reduction(wq, incol, outcol):
+    """
+    Computes the percent pollutant load reduction from a dataframe.
+
+    Parameters
+    ----------
+    wq : pandas.DataFrame
+        Tidy dataframe of the CVC water quality dataset.
+    incol, outcol : strings
+        Labels of the columns representing the influent and effluent
+        loads, respectively.
+
+    Returns
+    -------
+    red : pandas.Series
+        A series of percent load reduction values.
+
+    Examples
+    --------
+    >>> import pandas
+    >>> from pycvc import summary
+    >>> wq = pandas.DataFrame({'load_in': [25, 50, 75], 'load_out': [0, 25, 75]})
+    >>> wq['pct_red'] = summary.pct_reduction(wq, 'load_in', 'load_out')
+    >>> wq
+       load_in  load_out  pct_red
+    0       25         0      100
+    1       50        25       50
+    2       75        75        0
+
+    """
+
     return 100 * (wq[incol] - wq[outcol]) / wq[incol]
 
 
 def load_reduction_pct(wq, groupby_col=None, **load_cols):
+    """
+    Adds the percent load reduction (with upper and lower bounds) to
+    a dataframe.
+
+    Parameters
+    ----------
+    wq : pandas.DataFrame
+        Tidy dataframe of the CVC water quality dataset.
+    groupby_col : string, optional
+        Optional string that defines how results should be grouped
+        temporally. Valid options are "season", "grouped_season",
+        and "year". Default behavior does no temporal grouping.
+
+    Other Parameters
+    ----------------
+    load_inflow, load_outflow : str
+        Labels of columns with the influent and effluent load estimates.
+    load_inflow_lower, load_outflow_lower : str
+        Labels of columns with the lower bounds of the influent and
+        effluent load estimates.
+    load_inflow_upper, load_outflow_upper : str
+        Labels of columns with the upper bounds of the influent and
+        effluent load estimates.
+
+    Returns
+    -------
+    red : pandas.DataFrame
+        Summarized load reduction data.
+
+    Examples
+    --------
+    >>> import pandas
+    >>> from pycvc import summary
+    >>> tidy_file = 'output/tidy/wq_simple.csv'
+    >>> wq = (
+    ...     pandas.read_csv(tidy_file, parse_dates=['start_date', 'end_date'])
+    ...         .pipe(summary.classify_storms, 'total_precip_depth')
+    ...         .pipe(summary.remove_load_data_from_storms, ['2013-07-08'], 'start_date')
+    ... )
+    >>> red = summary.load_reduction_pct(wq, groupby_col='season')
+
+    """
     load_in = load_cols.pop('load_inflow', 'load_inflow')
     load_out = load_cols.pop('load_outflow', 'load_outflow')
     load_in_lower = load_cols.pop('load_inflow_lower', 'load_inflow_lower')
@@ -229,10 +451,13 @@ def load_summary_table(wq):  # pragma: no cover
 
 
 def storm_stats(hydro, minprecip=0, excluded_dates=None, groupby_col=None):
-    """ Statistics summarizing all the storm events
+    """
+    Statistics summarizing all the storm events.
 
     Parameters
     ----------
+    hydro : pandas.DataFrame
+        Tidy dataframe of the hydrologic quantities of each storm.
     minprecip : float (default = 0)
         The minimum amount of precipitation required to for a storm
         to be included. Using 0 (the default) will likely include
@@ -241,12 +466,9 @@ def storm_stats(hydro, minprecip=0, excluded_dates=None, groupby_col=None):
         This is a list of storm start dates that will be removed
         from the storms dataframe prior to computing statistics.
     groupby_col : string, optional
-        Optional string that defined how results should be group
+        Optional string that defines how results should be grouped
         temporally. Valid options are "season", "grouped_season",
-        and year. Default behavior does no temporal grouping.
-    **winsor_params : optional keyword arguments
-        Dictionary of column names (from `Site.storm_info`) and
-        percetiles at which those columns should be winsorized.
+        and "year". Default behavior does no temporal grouping.
 
     Returns
     -------
@@ -256,7 +478,14 @@ def storm_stats(hydro, minprecip=0, excluded_dates=None, groupby_col=None):
     --------
     pycvc.Site.storm_info
     wqio.units.winsorize_dataframe
-    scipy.stats.mstats.winsorize
+
+    Examples
+    --------
+    >>> import pandas
+    >>> from pycvc import summary
+    >>> tidy_file = 'output/tidy/hydro_simple.csv'
+    >>> hydro = pandas.read_csv(tidy_file, parse_dates=['start_date', 'end_date'])
+    >>> summary.storm_stats(hydro, excluded_dates=['2013-07-08'], groupby_col='year')
 
     """
 
@@ -286,24 +515,45 @@ def storm_stats(hydro, minprecip=0, excluded_dates=None, groupby_col=None):
 def wq_summary(wq, rescol='concentration', sampletype='composite',
                groupby_col=None):
 
-    """ Basic water quality Statistics
+    """
+    Basic water quality Statistics.
 
     Parameters
     ----------
+    wq : pandas.DataFrame
+        Tidy dataframe of the CVC water quality dataset.
     rescol : string (default = 'concentration')
-        The result column to summaryize. Valid values are
+        The result column to summarized. Valid values are
         "concentration" and "load_outflow".
     sampletype : string (default = 'composite')
         The types of samples to be summarized. Valid values are
-        "composite" and "grab".
+        "composite" and "unsampled".
     groupby_col : string, optional
-        Optional string that defined how results should be group
+        Optional string that defines how results should be grouped
         temporally. Valid options are "season", "grouped_season",
-        and year. Default behavior does no temporal grouping.
+        and "year". Default behavior does no temporal grouping.
 
     Returns
     -------
     summary : pandas.DataFrame
+
+    Examples
+    --------
+    >>> # load data
+    >>> import pandas
+    >>> from pycvc import summary
+    >>> tidy_file = 'output/tidy/wq_simple.csv'
+    >>> wq = (
+    ...     pandas.read_csv(tidy_file, parse_dates=['start_date', 'end_date'])
+    ...         .pipe(summary.classify_storms, 'total_precip_depth')
+    ...         .pipe(summary.remove_load_data_from_storms, ['2013-07-08'], 'start_date')
+    ... )
+
+    >>> # summarize concentrations by season
+    >>> summary.wq_summary(wq, groupby_col='season')
+
+    >>> # summarize effluent loads by year
+    >>> summary.wq_summary(wq, rescol='load_outflow', groupby_col='year')
 
     """
 
@@ -367,28 +617,38 @@ def wq_summary(wq, rescol='concentration', sampletype='composite',
 
 
 def load_totals(wq, groupby_col=None, NAval=0):
-    """ Returns the total loads for sampled storms and the given
-    sampletype.
+    """
+    Returns the total loads.
 
     Parameters
     ----------
-    sampletype : string (default = 'composite')
-        The types of samples to be summarized. Valid values are
-        "composite" and "grab".
+    wq : pandas.DataFrame
+        Tidy dataframe of the CVC water quality dataset.
     groupby_col : string, optional
-        Optional string that defined how results should be group
+        Optional string that defines how results should be grouped
         temporally. Valid options are "season", "grouped_season",
-        and year. Default behavior does no temporal grouping.
-    excluded_dates : list of date-likes, optional
-        This is a list of storm start dates that will be removed
-        from the storms dataframe prior to computing statistics.
+        and "year". Default behavior does no temporal grouping.
     NAval : float, optional
         Default value with which NA (missing) loads will be filled.
-        If none, NAs will remain inplace.
+        If none, NAs will remain in place.
 
     Returns
     -------
-    sampled_loads : pandas.DataFrame
+    total_loads : pandas.DataFrame
+
+    Examples
+    --------
+    >>> # load data
+    >>> import pandas
+    >>> from pycvc import summary
+    >>> tidy_file = 'output/tidy/wq_simple.csv'
+    >>> wq = (
+    ...     pandas.read_csv(tidy_file, parse_dates=['start_date', 'end_date'])
+    ...         .pipe(summary.classify_storms, 'total_precip_depth')
+    ...         .pipe(summary.remove_load_data_from_storms, ['2013-07-08'], 'start_date')
+    ... )
+    >>> # summarize loads by year
+    >>> summary.load_totals(wq, groupby_col='year')
 
     """
 

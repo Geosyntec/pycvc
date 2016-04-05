@@ -19,6 +19,11 @@ from . import validate
 # CVC-specific wqio.events subclasses
 from .samples import GrabSample, CompositeSample, Storm
 
+try:
+    from tqdm import tqdm
+except ImportError:    # pragma: no cover
+    tqdm = lambda x: x
+
 
 __all__ = ['Database', 'Site']
 
@@ -39,8 +44,6 @@ def _grouped_seasons(timestamp):
         return 'winter/spring'
     elif season.lower() in ['summer', 'autumn']:
         return 'summer/autumn'
-    else:
-        raise ValueError("{} is not a valid season".format(season))
 
 
 def _remove_storms_from_df(df, dates, datecol):
@@ -53,8 +56,8 @@ def _remove_storms_from_df(df, dates, datecol):
 
         # loop through all of the excluded dates
         for d in dates:
-            # # convert to a proper python date object
-            excl_date = wqio.utils.santizeTimestamp(d).date()
+            # convert to a proper python date object
+            excl_date = utils.santizeTimestamp(d).date()
             storm_rows = df.loc[df[datecol].dt.date == excl_date]
             excluded_storms.extend(storm_rows['storm_number'].values)
 
@@ -75,17 +78,12 @@ class Database(object):
     bmpdb : cvc.external.nsqd object
         Data structure representing the Internation Stormwater BMP
         Database.
-    testing : bool (default = False)
-        When True, the data only go back to 2014 to speed up the
-        analysis.
-
     """
 
-    def __init__(self, dbfile, nsqdata=None, bmpdb=None, testing=False):
+    def __init__(self, dbfile, nsqdata=None, bmpdb=None):
         self.dbfile = dbfile
         self.nsqdata = nsqdata
         self.bmpdb = bmpdb
-        self.testing = testing
         self._sites = None
         self._wqstd = None
 
@@ -109,8 +107,7 @@ class Database(object):
     @property
     def sites(self):
         if self._sites is None:
-            with self.connect() as cnn:
-                self._sites = pandas.read_sql("select * from sites", cnn)
+            self._sites = self._run_query("select * from sites")
         return self._sites
 
     def _check_site(self, site):
@@ -187,9 +184,6 @@ class Database(object):
         if onlyPOCs:
             wq = wq[wq['parameter'].isin(info.getPOCs())]
 
-        if self.testing:
-            wq = wq[wq['samplestart'].dt.year == 2014]
-
         return wq
 
     def getHydroData(self, site, resamplePeriodMinutes=10):
@@ -234,9 +228,6 @@ class Database(object):
             }
             resampleOffset = pandas.offsets.Minute(resamplePeriodMinutes)
             hydro = hydro.resample(resampleOffset, how=resample_dict)
-
-        if self.testing:
-            hydro = hydro.loc['2014']
 
         return hydro
 
@@ -291,9 +282,6 @@ class Database(object):
 
         samples = self._run_query(qry)
 
-        if self.testing:
-            samples = samples[samples['samplestart'].dt.year == 2014]
-
         return samples
 
     def getRatingCurve(self,  site):
@@ -325,10 +313,10 @@ class Database(object):
         if self._wqstd is None:
             self._wqstd = self._run_query("select * from wq_standards")
             joincols = ['parameter', 'units']
-            if self.nsqdata is not None:
+            if self.nsqdata is not None:  # pragma: no cover
                 self._wqstd = self._wqstd.merge(self.nsqdata.medians, on=joincols)
 
-            if self.bmpdb is not None:
+            if self.bmpdb is not None:  # pragma: no cover
                 self._wqstd = self._wqstd.merge(self.bmpdb.medians, on=joincols)
 
         return self._wqstd
@@ -1073,7 +1061,7 @@ class Site(object):
         # XXX: hack to load up storm info
         _ = self.storms
 
-        for sample in self.samples[sampletype]:
+        for sample in tqdm(self.samples[sampletype]):
             if sample.storm is not None:
                 sample.templateISR = self.templateISR
                 tex = sample.compileISR(version=version, clean=True)

@@ -16,7 +16,8 @@ requirements:
   build:
     - python
     - setuptools
-    - wqio
+    - pandas=0.17
+    - wqio=0.3.2
     - pybmpdb
     - pynsqd
     - pyodbc
@@ -25,7 +26,8 @@ requirements:
 
   run:
     - python
-    - wqio
+    - pandas=0.17
+    - wqio=0.3.2
     - pybmpdb
     - pynsqd
     - pyodbc

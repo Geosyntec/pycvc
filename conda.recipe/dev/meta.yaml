@@ -1,6 +1,6 @@
 package:
   name: pycvc
-  version: 0.2.x
+  version: "0.3.0dev"
 
 source:
   path: ../../

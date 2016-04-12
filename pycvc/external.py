@@ -103,7 +103,7 @@ class nsqd:
                 .xs('Residential', level='primary_landuse')
                 .pipe(np.round, 3)
                 .reset_index()
-                .rename(columns={'stat': 'NSQD Medians'})
+                .rename(columns={'stat': 'NSQD Median'})
         )
 
         return medians

@@ -236,20 +236,22 @@ class test_Site(object):
 
     @nptest.dec.skipif(not ON_WINDOWS)
     def test_wqdata(self):
-        expected_columns = ['site', 'sample', 'sampletype', 'samplestart', 'samplestop',
-                            'interval_minutes', 'parameter', 'units', 'detectionlimit',
-                            'qualifier', 'concentration', 'season', 'grouped_season', 'year']
-        expected_shape = (12, 14)
-
-        nt.assert_list_equal(self.site.wqdata.columns.tolist(), expected_columns)
-        nt.assert_tuple_equal(self.site.wqdata.shape, expected_shape)
-        self.site.wqdata.to_csv("pycvc/tests/testdata/baseline_wqdata.csv", index=False)
+        expected = (
+            load_test_data('baseline_wqdata.csv', parse_dates=['samplestart', 'samplestop'])
+                .assign(year=lambda df: df['year'].astype(str))
+        )
+        result = self.site.wqdata.reset_index(drop=True)
+        pdtest.assert_frame_equal(
+            result, expected,
+            check_dtype=False
+        )
 
     @nptest.dec.skipif(not ON_WINDOWS)
     def test_hydrodata(self):
         expected = load_test_data('baseline_hydrodata.csv')
+        result = self.site.hydrodata.data.reset_index(drop=True)
         pdtest.assert_frame_equal(
-            self.site.hydrodata.data.reset_index(drop=True), expected,
+            result, expected,
             check_dtype=False
         )
 

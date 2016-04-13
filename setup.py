@@ -28,7 +28,11 @@ CLASSIFIERS = [
     'Programming Language :: Python :: 3.4',
 ]
 INSTALL_REQUIRES = ['wqio', 'pybmpdb', 'pynsqd']
-PACKAGE_DATA = {'pycvc.tex': ['*.tex']}
+PACKAGE_DATA = {
+    'pycvc.tex': ['*.tex'],
+    'pycvc.tests.testdata': ['*.csv', '*.accdb'],
+    'pycvc.tests.baseline_images.viz_tests': ['*.png'],
+}
 
 setup(
     name=NAME,

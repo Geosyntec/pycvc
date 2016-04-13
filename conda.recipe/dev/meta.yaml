@@ -38,8 +38,8 @@ test:
   imports:
     - pycvc
 
-  #commands:
-  #  - python -c "import pycvc; pycvc.test()"
+  commands:
+    - python -c "import matplotlib as mpl; mpl.use('agg'); import pycvc; pycvc.test()"
 
   requires:
     - nose

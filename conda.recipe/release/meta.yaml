@@ -1,10 +1,10 @@
 package:
   name: pycvc
-  version: !!str 0.2.2
+  version: "0.3.0"
 
 source:
   git_url: https://github.com/Geosyntec/pycvc.git
-  git_tag: v0.2.2
+  git_tag: v0.3.0
 #  patches:
    # List any patch files here
    # - fix.patch
@@ -16,8 +16,8 @@ requirements:
   build:
     - python
     - setuptools
-    - pandas=0.17
-    - wqio=0.3.2
+    - pandas <=0.17
+    - wqio 0.3.2
     - pybmpdb
     - pynsqd
     - pyodbc
@@ -26,8 +26,8 @@ requirements:
 
   run:
     - python
-    - pandas=0.17
-    - wqio=0.3.2
+    - pandas <=0.17
+    - wqio 0.3.2
     - pybmpdb
     - pynsqd
     - pyodbc
@@ -39,8 +39,8 @@ test:
   imports:
     - pycvc
 
-  #commands:
-  #  - python -c "import pycvc; pycvc.test()"
+  commands:
+    - python -c "import matplotlib as mpl; mpl.use('agg'); import pycvc; pycvc.test()"
 
   requires:
     - nose

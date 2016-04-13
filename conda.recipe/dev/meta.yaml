@@ -1,6 +1,6 @@
 package:
   name: pycvc
-  version: 0.2.x
+  version: "0.3.0dev"
 
 source:
   path: ../../
@@ -15,8 +15,8 @@ requirements:
   build:
     - python
     - setuptools
-    - pandas=0.17
-    - wqio=0.3.2
+    - pandas <=0.17
+    - wqio 0.3.2
     - pybmpdb
     - pynsqd
     - pyodbc
@@ -25,8 +25,8 @@ requirements:
 
   run:
     - python
-    - pandas=0.17
-    - wqio=0.3.2
+    - pandas <=0.17
+    - wqio 0.3.2
     - pybmpdb
     - pynsqd
     - pyodbc
@@ -38,8 +38,8 @@ test:
   imports:
     - pycvc
 
-  #commands:
-  #  - python -c "import pycvc; pycvc.test()"
+  commands:
+    - python -c "import matplotlib as mpl; mpl.use('agg'); import pycvc; pycvc.test()"
 
   requires:
     - nose

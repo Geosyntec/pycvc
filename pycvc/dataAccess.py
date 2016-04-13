@@ -75,7 +75,7 @@ class Database(object):
     nsqddata : cvc.external.nsqd object
         Data structure representing the National Stormwater Quality
         Dataset.
-    bmpdb : cvc.external.nsqd object
+    bmpdb : cvc.external.bmpdb object
         Data structure representing the Internation Stormwater BMP
         Database.
     """
@@ -1031,12 +1031,6 @@ class Site(object):
             upper = dc.percentiles(95)[self.siteid].rename(columns={statcol: 'effluent upper'})
             return lower.join(med).join(upper).reset_index()
 
-            ## uses the normal approximation
-            # med = dc.percentiles(50)[self.siteid]
-            # IQR = (dc.percentiles(75) - dc.percentiles(25))[self.siteid]
-            # counts = dc.count[self.siteid]
-            # return notches(med, IQR, counts)
-
     def allISRs(self, sampletype, version='draft'):
         """ Compiles all Individual Storm Reports for a site
 
@@ -1052,6 +1046,10 @@ class Site(object):
         Returns
         -------
         None
+
+        Notes
+        -----
+        LaTeX must be installed on your system for this to work.
 
         """
 

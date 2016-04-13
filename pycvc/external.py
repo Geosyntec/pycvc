@@ -29,7 +29,17 @@ def _fix_nsqd_bacteria_units(df, unitscol='units'):
 
 
 class nsqd:
-    def __init__(self, color, marker, datafile=None):
+    """
+    Object to provide convenient access to the NSQD.
+
+    Parameters
+    ----------
+    color, marker : string
+        Matplotlib symbology strings.
+
+    """
+
+    def __init__(self, color, marker):
         self.color = color
         self.marker = marker
         self._data = None
@@ -43,7 +53,7 @@ class nsqd:
             'start_date', 'season', 'station', 'parameter', 'units',
         ]
         self.datafile = datafile
-        self.db = pynsqd.NSQData(datapath=self.datafile)
+        self.db = pynsqd.NSQData()
 
     @property
     def landuses(self):
@@ -146,7 +156,16 @@ class nsqd:
 
 
 class bmpdb:
-    def __init__(self, color, marker, datafile=None):
+    """
+    Object to provide convenient access to the BMP DB.
+
+    Parameters
+    ----------
+    color, marker : string
+        Matplotlib symbology strings.
+
+    """
+    def __init__(self, color, marker):
         self.color = color
         self.marker = marker
         self.paramnames = [p['bmpname'] for p in POC_dicts]
@@ -157,9 +176,7 @@ class bmpdb:
             lambda x: x['conc_units']['plain'] == 'CFU/100 mL', POC_dicts
         ))
 
-        self.datafile = datafile
         self.table, self.db = pybmpdb.getSummaryData(
-            dbpath=self.datafile,
             catanalysis=False,
             astable=True,
             parameter=self.paramnames,
@@ -235,6 +252,24 @@ class bmpdb:
 
 
 def combine_wq(wq, external, external_site_col):
+    """
+    Combines CVC water quality dataframes with the `tidy`
+    attributes of a `bmpdb` or `nsqd` object.
+
+    wq : pandas.DataFrame
+        A dataframe of CVC water quality data
+    external : nsqd or bmpdb object
+    external_site_col : str
+        The column in `external.datacollection.tidy` that on
+        which the data should be grouped. Analogous to "site"
+        in the CVC data (e.g., ED-1, LV-2, ...)
+
+    Returns
+    -------
+    tidy : pandas.DataFrame
+
+    """
+
     final_cols = [
         'parameter',
         'units',

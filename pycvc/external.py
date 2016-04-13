@@ -52,7 +52,6 @@ class nsqd:
             'epa_rain_zone', 'location_code', 'station_name', 'primary_landuse',
             'start_date', 'season', 'station', 'parameter', 'units',
         ]
-        self.datafile = datafile
         self.db = pynsqd.NSQData()
 
     @property

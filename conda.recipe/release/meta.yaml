@@ -23,6 +23,7 @@ requirements:
     - pyodbc
     - openpyxl
     - xlrd
+    - nose
 
   run:
     - python
@@ -34,6 +35,7 @@ requirements:
     - six
     - openpyxl
     - xlrd
+    - nose
 
 test:
   imports:
